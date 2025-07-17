@@ -12,9 +12,9 @@ export default function Home() {
   useDebounce(() => setdebouncedSearchTerm(searchTerm), 675, [searchTerm]);
 
   return (
-    <main className="min-h-screen flex flex-col w-full">
-      <div id="login" className="bg-red-300 font-bold text-center">
-        testing version 7/14/25 typescript integration
+    <main className="flex flex-col w-full">
+      <div id="login" className="bg-red-600 font-bold text-center">
+        testing version 7/17/25
       </div>
       <div className="text-center p-3 max-md:p-2">
         <p className="text-4xl max-md:text-3xl font-bold">ClassConnect</p>

@@ -39,7 +39,7 @@ const DateNavigation: React.FC<DateNavigationProps> = ({
         )}
       />
       {dates.map((date, index) => (
-        <PaginationItem key={date.toISOString()} className="w-25">
+        <PaginationItem key={date.toISOString()} className="w-50">
           <PaginationLink
             href="#"
             className={cn(

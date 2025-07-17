@@ -48,7 +48,7 @@ const ClassScrollBar: React.FC<ClassScrollBarProps> = ({
   const [imgError, setImgError] = useState<boolean>(false);
 
   return (
-    <ScrollArea className="w-75 rounded-lg border overflow-hidden">
+    <ScrollArea className="w-[300px] rounded-lg border overflow-hidden">
       <div className="pt-4 pb-4">
         <h4 className="text-sm font-medium leading-none text-center flex items-center justify-center">
           <img

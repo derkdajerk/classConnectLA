@@ -29,7 +29,7 @@ const ClassContent: React.FC<ClassContentProps> = ({
   searchTerm,
   studioVisibility,
 }) => (
-  <div className="flex-1 flex justify-center pt-2 w-full min-w-25 overflow-x-auto mx-10">
+  <div className="grid grid-flow-col auto-cols-max pt-2 overflow-x-auto px-4 max-w-full">
     {studioVisibility.PLAYGROUND && (
       <ClassScrollBar
         studioName="PLAYGROUND"
