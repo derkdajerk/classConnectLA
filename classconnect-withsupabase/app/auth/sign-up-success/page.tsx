@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -5,6 +6,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import Link from "next/link";
 
 export default function Page() {
   return (
@@ -23,6 +25,14 @@ export default function Page() {
                 You&apos;ve successfully signed up. Please check your email to
                 confirm your account before signing in.
               </p>
+            </CardContent>
+            <CardContent className="flex justify-center gap-2">
+              <Link href="/">
+                <Button variant={"outline"}>Home</Button>
+              </Link>
+              <Link href="/auth/login">
+                <Button variant={"outline"}>Login</Button>
+              </Link>
             </CardContent>
           </Card>
         </div>

@@ -58,6 +58,14 @@ export function ForgotPasswordForm({
               a password reset email.
             </p>
           </CardContent>
+          <CardContent className="flex justify-center gap-2">
+            <Link href="/">
+              <Button variant={"outline"}>Home</Button>
+            </Link>
+            <Link href="/auth/login">
+              <Button variant={"outline"}>Login</Button>
+            </Link>
+          </CardContent>
         </Card>
       ) : (
         <Card>
@@ -97,6 +105,14 @@ export function ForgotPasswordForm({
                 </Link>
               </div>
             </form>
+          </CardContent>
+          <CardContent className="flex justify-center gap-2">
+            <Link href="/">
+              <Button variant={"outline"}>Home</Button>
+            </Link>
+            <Link href="/auth/login">
+              <Button variant={"outline"}>Login</Button>
+            </Link>
           </CardContent>
         </Card>
       )}
