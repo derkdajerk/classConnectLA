@@ -21,7 +21,7 @@ const Search: React.FC<SearchProps> = ({ searchTerm, setSearchTerm }) => {
   };
 
   return (
-    <div className="flex w-full mx-auto justify-center">
+    <div className="flex w-full mx-auto justify-center gap-2">
       <input
         className="bg-gray-300 w-full px-4 py-3 rounded-lg max-w-3xl"
         type="text"
@@ -33,7 +33,7 @@ const Search: React.FC<SearchProps> = ({ searchTerm, setSearchTerm }) => {
       />
       <Button
         variant="secondary"
-        className="bg-gray-400 hover:bg-gray-500 hover:font-bold my-auto cursor-pointer"
+        className="bg-gray-200 hover:bg-gray-500 hover:font-bold my-auto cursor-pointer"
         onClick={clearSearchTerm}
       >
         Clear
