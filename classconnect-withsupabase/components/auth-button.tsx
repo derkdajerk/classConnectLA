@@ -7,18 +7,21 @@ export async function AuthButton() {
   const supabase = await createClient();
 
   // You can also use getUser() which will be slower.
-  const { data } = await supabase.auth.getClaims();
+  const { data } = await supabase.auth.getUser();
 
-  const user = data?.claims;
-  // console.log(data);
+  const user = data?.user;
+  const displayName = user?.user_metadata.display_name || user?.email;
 
   return user ? (
     <div className="flex items-center gap-4">
-      Hey, {user.email}!
+      Hey, {displayName}!
       <LogoutButton />
-      <Button>
-        <Link href="/auth/protected/schedule">Schedule</Link>
-      </Button>
+      <Link href={"/auth/protected/schedule"}>
+        <Button>Schedule</Button>
+      </Link>
+      <Link href="/">
+        <Button>Home</Button>
+      </Link>
     </div>
   ) : (
     <div className="flex gap-2">
