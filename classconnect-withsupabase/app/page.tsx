@@ -25,7 +25,7 @@ export default function Home() {
               ClassConnect
             </h1>
             <p className="text-lg text-muted-foreground max-w-md">
-              All your dance classes, all in one place.
+              All your dance classes, all in one place. TEST
             </p>
           </section>
           {/* Call-to-action Buttons */}
