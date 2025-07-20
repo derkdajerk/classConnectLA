@@ -1,8 +1,11 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "./ui/separator";
 import { cn } from "../lib/utils";
+import Image from "next/image";
+import BookmarkButton from "./bookmarkbutton";
 
 interface DanceClass {
   class_id: string;
@@ -51,7 +54,7 @@ const ClassScrollBar: React.FC<ClassScrollBarProps> = ({
     <ScrollArea className="w-[300px] rounded-lg border overflow-hidden">
       <div className="pt-4 pb-4">
         <h4 className="text-sm font-medium leading-none text-center flex items-center justify-center">
-          <img
+          <Image
             src={`/${studioName}.webp`}
             alt={studioName}
             width={50}
@@ -73,6 +76,7 @@ const ClassScrollBar: React.FC<ClassScrollBarProps> = ({
             <div className="text-sm grid grid-cols-3 gap-4 mb-4">
               <div className="text-left">{formatTime(danceClass.time)}</div>
               <div className="text-right font-medium col-start-2 col-span-3">
+                <BookmarkButton classId={danceClass.class_id} />
                 {danceClass.classname}
               </div>
             </div>
