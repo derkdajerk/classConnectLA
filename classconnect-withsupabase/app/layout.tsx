@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { ThemeProvider } from "next-themes";
 import { Analytics } from "@vercel/analytics/next";
+import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
 const defaultUrl = process.env.VERCEL_URL
@@ -20,7 +21,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={``}>
+      <body>
         <ThemeProvider
           attribute="class"
           defaultTheme="light"
@@ -28,6 +29,13 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           {children}
+          <Toaster
+            richColors
+            expand={false}
+            closeButton={true}
+            position="bottom-right"
+            duration={3000}
+          />
         </ThemeProvider>
         <Analytics />
       </body>

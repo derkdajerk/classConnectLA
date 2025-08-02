@@ -1,34 +1,46 @@
 "use client";
-import AllPageContent from "@/components/AllPageContent";
-import Search from "@/components/Search";
-import { Toaster } from "@/components/ui/sonner";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useDebounce } from "react-use";
+import DesktopLayout from "@/components/DesktopLayout";
+import MobileLayout from "@/components/MobileLayout";
 
 export default function Home() {
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setdebouncedSearchTerm] = useState("");
+  const [isMobile, setIsMobile] = useState(false);
 
   useDebounce(() => setdebouncedSearchTerm(searchTerm), 675, [searchTerm]);
 
-  return (
-    <main className="flex flex-col w-full">
-      <div className="text-center p-3 max-md:p-2">
-        <p className="text-4xl max-md:text-3xl font-bold">ClassConnect</p>
-      </div>
-      <Search
-        searchTerm={searchTerm}
+  useEffect(() => {
+    // Function to check if screen is mobile size
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    // Set initial value
+    handleResize();
+
+    // Add event listener for window resize
+    window.addEventListener("resize", handleResize);
+
+    // Clean up event listener on component unmount
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // Render either mobile or desktop layout based on screen size
+  if (isMobile) {
+    return (
+      <MobileLayout
+        searchTerm={debouncedSearchTerm}
         setSearchTerm={setSearchTerm}
-        className="text-center"
       />
-      <AllPageContent searchTerm={debouncedSearchTerm}></AllPageContent>
-      <Toaster
-        richColors
-        expand={false}
-        closeButton={true}
-        position="bottom-center"
-        duration={3000}
-      />
-    </main>
+    );
+  }
+
+  return (
+    <DesktopLayout
+      searchTerm={debouncedSearchTerm}
+      setSearchTerm={setSearchTerm}
+    />
   );
 }

@@ -4,6 +4,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "./ui/separator";
 import { cn } from "../lib/utils";
 import Image from "next/image";
+import { toast } from "sonner";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -61,80 +62,64 @@ const ClassScrollBar: React.FC<ClassScrollBarProps> = ({
     Record<string, boolean>
   >({});
 
-  // In the future, we could use useEffect to fetch saved classes from Supabase
-  // useEffect(() => {
-  //   const fetchUserBookmarks = async () => {
-  //     // This is where you would call your Supabase function once implemented
-  //     const userId = "current-user-id"; // You'll need to get this from your auth context
-  //     const bookmarkedClassIds = await fetchBookmarkedClasses(userId);
-  //
-  //     const bookmarksMap: Record<string, boolean> = {};
-  //     bookmarkedClassIds.forEach(id => {
-  //       bookmarksMap[id] = true;
-  //     });
-  //
-  //     setSavedClasses(bookmarksMap);
-  //   };
-  //
-  //   fetchUserBookmarks();
-  // }, []);
+  const toggleSaved = (classId: string, className: string) => {
+    // Get the current state before updating
+    const isCurrentlySaved = savedClasses[classId];
 
-  const toggleSaved = (classId: string) => {
-    setSavedClasses((prev) => {
-      const newState = {
-        ...prev,
-        [classId]: !prev[classId],
-      };
+    // Update state
+    setSavedClasses((prev) => ({
+      ...prev,
+      [classId]: !isCurrentlySaved,
+    }));
 
-      // Future Supabase integration
-      // const userId = "current-user-id";
-      // if (newState[classId]) {
-      //   saveClassToBookmarks(userId, classId);
-      // } else {
-      //   removeClassFromBookmarks(userId, classId);
-      // }
-
-      return newState;
-    });
+    // Show toast based on new state (opposite of current)
+    if (!isCurrentlySaved) {
+      toast.success(`${className} saved to bookmarks`);
+    } else {
+      toast.info(`${className} removed from bookmarks`);
+    }
   };
 
-  const toggleScheduled = (classId: string) => {
-    setScheduledClasses((prev) => {
-      const newState = {
-        ...prev,
-        [classId]: !prev[classId],
-      };
+  const toggleScheduled = (classId: string, className: string) => {
+    // Get the current state before updating
+    const isCurrentlyScheduled = scheduledClasses[classId];
 
-      // Future Supabase integration
-      // const userId = "current-user-id";
-      // if (newState[classId]) {
-      //   addClassToSchedule(userId, classId);
-      // }
+    // Update state
+    setScheduledClasses((prev) => ({
+      ...prev,
+      [classId]: !isCurrentlyScheduled,
+    }));
 
-      return newState;
-    });
+    // Show toast based on new state (opposite of current)
+    if (!isCurrentlyScheduled) {
+      toast.success(`${className} added to schedule`);
+    } else {
+      toast.info(`${className} removed from schedule`);
+    }
   };
 
-  const toggleNotification = (classId: string) => {
-    setNotifiedClasses((prev) => {
-      const newState = {
-        ...prev,
-        [classId]: !prev[classId],
-      };
+  const toggleNotification = (classId: string, className: string) => {
+    // Get the current state before updating
+    const isCurrentlyNotified = notifiedClasses[classId];
 
-      // Future Supabase integration
-      // const userId = "current-user-id";
-      // if (newState[classId]) {
-      //   setClassNotification(userId, classId);
-      // }
+    // Update state
+    setNotifiedClasses((prev) => ({
+      ...prev,
+      [classId]: !isCurrentlyNotified,
+    }));
 
-      return newState;
-    });
+    // Show toast based on new state (opposite of current)
+    if (!isCurrentlyNotified) {
+      toast.success(`Notifications enabled for ${className}`);
+    } else {
+      toast.info(`Notifications disabled for ${className}`);
+    }
   };
 
   const handlePlaceholder = (danceClass: DanceClass) => {
-    console.log("Placeholder action:", danceClass);
-    // Will be implemented later
+    toast(`Action performed on ${danceClass.classname}`, {
+      icon: "⚠",
+    });
   };
 
   return (
@@ -191,25 +176,14 @@ const ClassScrollBar: React.FC<ClassScrollBarProps> = ({
                     {danceClass.instructor}
                   </div>
                 </div>
-                <div className="flex gap-2 justify-end">
-                  {savedClasses[danceClass.class_id] && (
-                    <span title="Saved to bookmarks">❤️</span>
-                  )}
-                  {scheduledClasses[danceClass.class_id] && (
-                    <span title="Added to schedule">📅</span>
-                  )}
-                  {notifiedClasses[danceClass.class_id] && (
-                    <span title="Notifications enabled">🔔</span>
-                  )}
-                </div>
               </div>
             </DropdownMenuTrigger>
-            <Separator className=" mt-2 mb-2" />
+            <Separator className="mt-2 mb-2" />
             <DropdownMenuContent align="end" side="bottom">
               <DropdownMenuItem
                 onClick={(e) => {
                   e.stopPropagation();
-                  toggleSaved(danceClass.class_id);
+                  toggleSaved(danceClass.class_id, danceClass.classname);
                 }}
                 className="cursor-pointer"
               >
@@ -221,19 +195,19 @@ const ClassScrollBar: React.FC<ClassScrollBarProps> = ({
               <DropdownMenuItem
                 onClick={(e) => {
                   e.stopPropagation();
-                  toggleScheduled(danceClass.class_id);
+                  toggleScheduled(danceClass.class_id, danceClass.classname);
                 }}
                 className="cursor-pointer"
               >
                 <span className="mr-2">📅</span>
                 {scheduledClasses[danceClass.class_id]
-                  ? "Added to Schedule"
+                  ? "Remove from Schedule"
                   : "Add to Schedule"}
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={(e) => {
                   e.stopPropagation();
-                  toggleNotification(danceClass.class_id);
+                  toggleNotification(danceClass.class_id, danceClass.classname);
                 }}
                 className="cursor-pointer"
               >
