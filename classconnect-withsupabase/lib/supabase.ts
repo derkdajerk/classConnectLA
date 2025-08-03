@@ -32,9 +32,27 @@ export const addClassToSchedule = async (userId: string, classId: string) => {
   return { success: true };
 };
 
+export const removeClassFromSchedule = async (
+  userId: string,
+  classId: string
+) => {
+  // Implement Supabase remove from bookmarks functionality
+  console.log(`Removing class ${classId} from schedule for user ${userId}`);
+  return { success: true };
+};
+
 export const setClassNotification = async (userId: string, classId: string) => {
   // Implement Supabase notifications functionality
   console.log(`Setting notification for class ${classId} for user ${userId}`);
+  return { success: true };
+};
+
+export const deleteClassNotification = async (
+  userId: string,
+  classId: string
+) => {
+  // Implement Supabase notifications functionality
+  console.log(`Deleting notification for class ${classId} for user ${userId}`);
   return { success: true };
 };
 

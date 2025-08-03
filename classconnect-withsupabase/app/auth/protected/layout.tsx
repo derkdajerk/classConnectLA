@@ -12,16 +12,27 @@ export default function ProtectedLayout({
   return (
     <main className="min-h-screen flex flex-col items-center">
       <div className="flex-1 w-full flex flex-col items-center">
-        <nav className="w-full flex justify-center border-b border-b-foreground/10 h-16">
-          <div className="w-full max-w-5xl flex justify-between items-center p-3 px-5 text-sm">
-            <div className="flex gap-5 items-center font-semibold">
-              <Link href={""}>ClassConnect</Link>
-              <div className="flex items-center gap-2"></div>
+        <nav className="w-full flex justify-center border-b border-b-foreground/10 min-h-16">
+          <div className="w-full max-w-5xl flex flex-col md:flex-row justify-between p-2 px-3 md:px-5 text-sm">
+            {/* Mobile: ClassConnect on its own row at top */}
+            {/* <div className="font-semibold text-lg w-full text-center mb-1 md:hidden">
+              <Link href={"/"}>ClassConnect</Link>
+            </div> */}
+
+            {/* Desktop: Regular row layout */}
+            <div className="flex w-full justify-between items-center">
+              <div className="font-semibold text-2xl hidden md:block">
+                <Link href={"/"}>ClassConnect</Link>
+              </div>
+
+              {/* Auth content */}
+              <div className="w-full md:w-auto">
+                {!hasEnvVars ? <EnvVarWarning /> : <AuthButton />}
+              </div>
             </div>
-            {!hasEnvVars ? <EnvVarWarning /> : <AuthButton />}
           </div>
         </nav>
-        <div className="flex-1 flex flex-col gap-20 min-h-[1500px]">
+        <div className="flex-1 flex flex-col gap-20 min-h-[1500px] mt-1">
           {children}
         </div>
 

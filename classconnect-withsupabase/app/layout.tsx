@@ -21,14 +21,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body>
+      <body className="min-h-screen flex flex-col items-center overflow-x-hidden w-full">
         <ThemeProvider
           attribute="class"
           defaultTheme="light"
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          <div className="w-full">{children}</div>
           <Toaster
             richColors
             expand={false}
