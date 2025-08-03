@@ -25,6 +25,7 @@ interface ClassScrollBarProps {
   studioName: string;
   danceClassList: DanceClass[];
   isSearchTerm: boolean;
+  isMobile?: boolean;
 }
 
 const formatTime = (time: string): string => {
@@ -52,6 +53,7 @@ const ClassScrollBar: React.FC<ClassScrollBarProps> = ({
   studioName,
   danceClassList,
   isSearchTerm,
+  isMobile = false,
 }) => {
   const [imgError, setImgError] = useState<boolean>(false);
   const [savedClasses, setSavedClasses] = useState<Record<string, boolean>>({});
@@ -124,24 +126,29 @@ const ClassScrollBar: React.FC<ClassScrollBarProps> = ({
 
   return (
     <ScrollArea className="w-[300px] rounded-lg border overflow-hidden max-md:w-full">
-      <div className="pt-4 pb-4">
-        <h4 className="text-sm font-medium leading-none text-center flex items-center justify-center min-h-16">
-          <Image
-            src={`/${studioName}.webp`}
-            alt={studioName}
-            width={50}
-            height={50}
-            className="mx-2"
-            onError={() => {
-              if (!imgError) {
-                setImgError(true);
-              }
-            }}
-          />
-          {studioName}
-        </h4>
-      </div>
-      <Separator className="w-full" />
+      {/* Only show studio header in desktop view */}
+      {!isMobile && (
+        <>
+          <div className="pt-4 pb-4">
+            <h4 className="text-sm font-medium leading-none text-center flex items-center justify-center min-h-16">
+              <Image
+                src={`/${studioName}.webp`}
+                alt={studioName}
+                width={50}
+                height={50}
+                className="mx-2"
+                onError={() => {
+                  if (!imgError) {
+                    setImgError(true);
+                  }
+                }}
+              />
+              {studioName}
+            </h4>
+          </div>
+          <Separator className="w-full" />
+        </>
+      )}
       <div className="p-4">
         {danceClassList?.map((danceClass) => (
           <DropdownMenu key={danceClass.class_id}>

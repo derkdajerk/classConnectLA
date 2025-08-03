@@ -11,6 +11,7 @@ import { ChevronDown, ChevronUp } from "lucide-react";
 import { Separator } from "./ui/separator";
 import ClassScrollBar from "./ClassScrollBar";
 import { Progress } from "./ui/progress";
+import Image from "next/image";
 import {
   fetchStudioClassesByDateAndTime,
   fetchStudioClassesBySearchAndTime,
@@ -223,7 +224,20 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
                 setOpenStudioId(openStudioId === studio.id ? "" : studio.id)
               }
             >
-              <span className="font-semibold">{studio.name}</span>
+              <div className="flex items-center gap-2">
+                <Image
+                  src={`/${studio.id}.webp`}
+                  alt={studio.name}
+                  width={30}
+                  height={30}
+                  className="rounded-sm"
+                  onError={(e) => {
+                    // Fallback if image fails to load
+                    e.currentTarget.style.display = "none";
+                  }}
+                />
+                <span className="font-semibold">{studio.name}</span>
+              </div>
               {openStudioId === studio.id ? (
                 <ChevronUp className="h-5 w-5" />
               ) : (
@@ -239,6 +253,7 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
                       studioName={studio.id}
                       danceClassList={danceClasses[studio.id] || []}
                       isSearchTerm={Boolean(searchTerm?.trim())}
+                      isMobile={true}
                     />
                   </div>
                 </CardContent>
