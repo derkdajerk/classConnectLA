@@ -25,7 +25,7 @@ export async function AuthButton() {
       </span>
 
       {/* Button row - shown below greeting on mobile, inline on desktop */}
-      <div className="flex gap-2 items-center w-full md:w-auto justify-between md:justify-start mt-1 md:mt-0">
+      <div className="flex gap-2 items-center w-full md:w-auto justify-center md:justify-start md:mt-0">
         <LogoutButton />
         <Link href={"/auth/protected/schedule"}>
           <Button size="sm">Schedule</Button>

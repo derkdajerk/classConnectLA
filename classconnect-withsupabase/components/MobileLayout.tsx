@@ -214,9 +214,9 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
       </div>
 
       {/* Studio Accordion */}
-      <div className="px-4 py-2 space-y-2 flex-1">
+      <div className="px-4 py-2 space-y-2 flex-1 w-full">
         {studios.map((studio) => (
-          <Card key={studio.id} className="overflow-hidden">
+          <Card key={studio.id} className="overflow-hidden w-full">
             <button
               className="flex w-full items-center justify-between p-3"
               onClick={() =>

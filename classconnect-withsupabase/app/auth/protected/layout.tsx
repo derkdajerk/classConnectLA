@@ -10,8 +10,8 @@ export default function ProtectedLayout({
   children: React.ReactNode;
 }) {
   return (
-    <main className="min-h-screen flex flex-col items-center">
-      <div className="flex-1 w-full flex flex-col items-center">
+    <main className="min-h-screen flex flex-col overflow-x-hidden w-full">
+      <div className="flex-1 w-full flex flex-col">
         <nav className="w-full flex justify-center border-b border-b-foreground/10 min-h-16">
           <div className="w-full max-w-5xl flex flex-col md:flex-row justify-between p-2 px-3 md:px-5 text-sm">
             {/* Mobile: ClassConnect on its own row at top */}
@@ -32,10 +32,9 @@ export default function ProtectedLayout({
             </div>
           </div>
         </nav>
-        <div className="flex-1 flex flex-col gap-20 min-h-[1500px] mt-1">
+        <div className="flex-1 flex flex-col gap-20 min-h-[1500px] mt-1 w-full max-w-none">
           {children}
         </div>
-
         <footer className="w-full flex items-center justify-center border-t mx-auto text-center text-muted-foreground text-sm gap-8 py-16">
           <p>
             Contact:{" "}

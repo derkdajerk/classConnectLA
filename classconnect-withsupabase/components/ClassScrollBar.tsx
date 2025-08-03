@@ -123,9 +123,9 @@ const ClassScrollBar: React.FC<ClassScrollBarProps> = ({
   };
 
   return (
-    <ScrollArea className="w-[300px] rounded-lg border overflow-hidden">
+    <ScrollArea className="w-[300px] rounded-lg border overflow-hidden max-md:w-full">
       <div className="pt-4 pb-4">
-        <h4 className="text-sm font-medium leading-none text-center flex items-center justify-center">
+        <h4 className="text-sm font-medium leading-none text-center flex items-center justify-center min-h-16">
           <Image
             src={`/${studioName}.webp`}
             alt={studioName}
