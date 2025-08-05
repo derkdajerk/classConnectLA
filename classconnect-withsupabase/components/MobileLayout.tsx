@@ -1,10 +1,10 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import React, { useState, useEffect } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
-import { Dialog, DialogContent, DialogTrigger } from "./ui/dialog";
 import {
   Search as SearchIcon,
   Calendar,
@@ -13,13 +13,15 @@ import {
   Bookmark,
   User,
   MoreHorizontal,
+  MapPin,
+  CalendarIcon,
 } from "lucide-react";
 import { Card, CardContent } from "./ui/card";
-import { ChevronDown, ChevronUp } from "lucide-react";
 import { Separator } from "./ui/separator";
 import ClassScrollBar from "./ClassScrollBar";
 import { Progress } from "./ui/progress";
 import Image from "next/image";
+import Link from "next/link";
 import {
   fetchStudioClassesByDateAndTime,
   fetchStudioClassesBySearchAndTime,
@@ -47,6 +49,9 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
   const [openStudioId, setOpenStudioId] = useState<string>(studios[0]?.id);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [dates, setDates] = useState<Date[]>([]);
+  const [currentWeekStartDate, setCurrentWeekStartDate] = useState<Date>(
+    new Date()
+  );
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [progress, setProgress] = useState<number>(0);
   const [danceClasses, setDanceClasses] = useState<
@@ -60,25 +65,36 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
   });
   const [timeRange] = useState({ start: "", end: "" });
 
-  // Generate dates for a week
+  // Generate dates for a specific week
+  const generateWeekDates = (startDate: Date) => {
+    const newWeekDates = Array.from({ length: 7 }, (_, i) => {
+      const date = new Date(startDate);
+      date.setDate(startDate.getDate() + i);
+      return date;
+    });
+    return newWeekDates;
+  };
+
+  // Initialize dates for the current week, starting from today
   useEffect(() => {
     const today = new Date();
+    // Set hours to 0 to avoid time comparison issues
+    today.setHours(0, 0, 0, 0);
+
+    // Set current week start date to today
+    setCurrentWeekStartDate(today);
+
+    // Generate dates for the current week
     const weekDates = Array.from({ length: 7 }, (_, i) => {
       const date = new Date(today);
       date.setDate(today.getDate() + i);
       return date;
     });
     setDates(weekDates);
-  }, []);
 
-  // Format date for display
-  const formatDate = (date: Date): string => {
-    return date.toLocaleDateString("en-US", {
-      weekday: "short",
-      month: "short",
-      day: "numeric",
-    });
-  };
+    // Set today as the initial selected date
+    setSelectedDate(today);
+  }, []);
 
   // Format date for API
   const formatDateForApi = (date: Date): string => {
@@ -145,6 +161,22 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
     loadClassesForStudio();
   }, [openStudioId, selectedDate, searchTerm, timeRange]);
 
+  // Navigate to previous week
+  const goToPreviousWeek = () => {
+    const prevWeekStart = new Date(currentWeekStartDate);
+    prevWeekStart.setDate(prevWeekStart.getDate() - 7);
+    setCurrentWeekStartDate(prevWeekStart);
+    setDates(generateWeekDates(prevWeekStart));
+  };
+
+  // Navigate to next week
+  const goToNextWeek = () => {
+    const nextWeekStart = new Date(currentWeekStartDate);
+    nextWeekStart.setDate(nextWeekStart.getDate() + 7);
+    setCurrentWeekStartDate(nextWeekStart);
+    setDates(generateWeekDates(nextWeekStart));
+  };
+
   // Handle date selection
   const handleDateSelect = (date: Date) => {
     setSelectedDate(date);
@@ -154,12 +186,18 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
     <main className="flex flex-col w-full h-[100dvh] fixed inset-0 overflow-hidden pb-[env(safe-area-inset-bottom)] pt-[env(safe-area-inset-top)]">
       {/* Header */}
       <div className="flex items-center justify-between bg-white dark:bg-gray-950 px-4 py-3 sticky top-0 z-50">
-        <h1 className="text-lg font-bold">ClassConnectLA</h1>
-        <div className="flex gap-2">
+        <Link href={"/"} className="flex items-center">
+          <MapPin className="h-5 w-5 mr-2" />
+          <h1 className="text-2xl font-bold">ClassConnectLA</h1>
+        </Link>
+        <div className="flex gap-3">
+          <Button size="icon" variant="ghost">
+            <CalendarIcon className="h-5 w-5" />
+          </Button>
           <Sheet>
             <SheetTrigger asChild>
-              <Button size="icon" variant="outline">
-                <SearchIcon className="h-4 w-4" />
+              <Button size="icon" variant="ghost">
+                <SearchIcon className="h-5 w-5" />
               </Button>
             </SheetTrigger>
             <SheetContent side="top">
@@ -185,36 +223,117 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
         </div>
       </div>
 
-      {/* Date Picker */}
-      <div className="px-4 py-3">
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button variant="outline" className="w-full flex justify-between">
-              <span>{formatDate(selectedDate)}</span>
-              <Calendar className="ml-2 h-4 w-4" />
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <div className="grid grid-cols-3 gap-2">
-              {dates.map((date) => (
-                <Button
+      {/* Studio Navigation Tabs */}
+      <div className="flex whitespace-nowrap py-3 px-4 border-b bg-white dark:bg-gray-950 shadow-sm mx-auto w-full">
+        {studios.map((studio) => (
+          <button
+            key={studio.id}
+            className={`px-4 py-2 text-sm font-medium mx-1 rounded-md ${
+              openStudioId === studio.id
+                ? "bg-primary/10 text-primary font-semibold"
+                : "text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800"
+            }`}
+            onClick={() => setOpenStudioId(studio.id)}
+          >
+            {studio.name}
+          </button>
+        ))}
+      </div>
+
+      {/* Circular Date Picker with Swipe Navigation */}
+      <div className="py-4 bg-white dark:bg-gray-950 border-b relative">
+        {/* Date scrolling container - page-like swipe */}
+        <div className="relative overflow-hidden w-full">
+          <div
+            className="flex justify-between w-full px-4 pb-1 touch-pan-x transition-transform duration-300 ease-out"
+            style={{ transform: `translateX(0px)` }}
+            id="date-container"
+            onTouchStart={(e) => {
+              const container = e.currentTarget;
+              container.dataset.touchStartX = e.touches[0].clientX.toString();
+            }}
+            onTouchEnd={(e) => {
+              const container = e.currentTarget;
+              const touchEndX = e.changedTouches[0].clientX;
+              const touchStartX = parseInt(
+                container.dataset.touchStartX || "0"
+              );
+              const swipeDistance = touchEndX - touchStartX;
+
+              // If swiped left significantly, go to next week
+              if (swipeDistance < -50) {
+                goToNextWeek();
+                // Animation effect
+                container.style.transform = "translateX(-50px)";
+                setTimeout(() => {
+                  container.style.transition = "none";
+                  container.style.transform = "translateX(0px)";
+                  setTimeout(() => {
+                    container.style.transition = "transform 300ms ease-out";
+                  }, 50);
+                }, 300);
+              }
+              // If swiped right significantly, go to previous week
+              else if (swipeDistance > 50) {
+                goToPreviousWeek();
+                // Animation effect
+                container.style.transform = "translateX(50px)";
+                setTimeout(() => {
+                  container.style.transition = "none";
+                  container.style.transform = "translateX(0px)";
+                  setTimeout(() => {
+                    container.style.transition = "transform 300ms ease-out";
+                  }, 50);
+                }, 300);
+              }
+            }}
+          >
+            {dates.map((date, index) => {
+              const isToday = new Date().toDateString() === date.toDateString();
+              const isSelected =
+                selectedDate.toDateString() === date.toDateString();
+              const day = date.getDate();
+              const dayOfWeek = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"][
+                date.getDay()
+              ];
+
+              return (
+                <div
                   key={date.toISOString()}
-                  variant={
-                    date.toDateString() === selectedDate.toDateString()
-                      ? "default"
-                      : "outline"
-                  }
-                  onClick={() => {
-                    handleDateSelect(date);
-                  }}
-                  className="w-full"
+                  className="flex flex-col items-center"
+                  style={{ width: `${100 / 7}%` }}
                 >
-                  {formatDate(date)}
-                </Button>
-              ))}
-            </div>
-          </DialogContent>
-        </Dialog>
+                  <button
+                    onClick={() => handleDateSelect(date)}
+                    className="flex flex-col items-center focus:outline-none w-full"
+                    type="button"
+                  >
+                    <div
+                      className={`flex items-center justify-center w-12 h-12 md:w-14 md:h-14 rounded-full shadow-sm 
+                        ${
+                          isSelected
+                            ? "bg-primary text-primary-foreground"
+                            : isToday
+                            ? "border-2 border-primary"
+                            : "bg-background border border-gray-300 dark:border-gray-700"
+                        }
+                      `}
+                    >
+                      <span className="text-lg font-medium">{day}</span>
+                    </div>
+                    <span className="text-xs mt-1 font-medium">
+                      {index === 0 && isToday ? "Today" : dayOfWeek}
+                    </span>
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Left/right swipe indicators (subtle visual cues) */}
+        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-6 h-16 bg-gradient-to-r from-white/40 to-transparent dark:from-gray-950/40 pointer-events-none"></div>
+        <div className="absolute right-0 top-1/2 -translate-y-1/2 w-6 h-16 bg-gradient-to-l from-white/40 to-transparent dark:from-gray-950/40 pointer-events-none"></div>
       </div>
 
       {/* Loading Indicator */}
@@ -224,75 +343,48 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
 
       {/* Content Area - Scrollable */}
       <div className="flex-1 overflow-y-auto">
-        <div className="px-4 py-2 space-y-2 w-full">
-          {studios.map((studio) => (
-            <Card key={studio.id} className="overflow-hidden w-full">
-              <button
-                className="flex w-full items-center justify-between p-3"
-                onClick={() =>
-                  setOpenStudioId(openStudioId === studio.id ? "" : studio.id)
-                }
-              >
-                <div className="flex items-center gap-2">
-                  <Image
-                    src={`/${studio.id}.webp`}
-                    alt={studio.name}
-                    width={30}
-                    height={30}
-                    className="rounded-sm"
-                    onError={(e) => {
-                      // Fallback if image fails to load
-                      e.currentTarget.style.display = "none";
-                    }}
+        <div className="px-4 py-2 w-full">
+          {openStudioId ? (
+            <Card className="overflow-hidden w-full border rounded-lg p-0">
+              <CardContent className="p-0">
+                <div className="">
+                  <ClassScrollBar
+                    studioName={openStudioId}
+                    danceClassList={danceClasses[openStudioId] || []}
+                    isSearchTerm={Boolean(searchTerm?.trim())}
+                    isMobile={true}
                   />
-                  <span className="font-semibold">{studio.name}</span>
                 </div>
-                {openStudioId === studio.id ? (
-                  <ChevronUp className="h-5 w-5" />
-                ) : (
-                  <ChevronDown className="h-5 w-5" />
-                )}
-              </button>
-              {openStudioId === studio.id && (
-                <>
-                  <Separator />
-                  <CardContent className="p-0">
-                    <div className="py-2">
-                      <ClassScrollBar
-                        studioName={studio.id}
-                        danceClassList={danceClasses[studio.id] || []}
-                        isSearchTerm={Boolean(searchTerm?.trim())}
-                        isMobile={true}
-                      />
-                    </div>
-                  </CardContent>
-                </>
-              )}
+              </CardContent>
             </Card>
-          ))}
+          ) : (
+            <div className="text-center py-8 text-gray-500">
+              Select a studio to view classes
+            </div>
+          )}
         </div>
       </div>
 
       {/* iOS-style Bottom Navigation */}
       <div className="flex items-center justify-around bg-white dark:bg-gray-950 border-t border-gray-200 dark:border-gray-800 py-2 px-4 mt-auto pb-[env(safe-area-inset-bottom)] sticky bottom-0">
         <button className="flex flex-col items-center justify-center p-2 text-primary">
-          <Home className="h-6 w-6" />
+          <Home className="h-5 w-5" />
           <span className="text-xs mt-1">Home</span>
         </button>
         <button className="flex flex-col items-center justify-center p-2">
-          <Calendar className="h-6 w-6" />
+          <Calendar className="h-5 w-5" />
           <span className="text-xs mt-1">Schedule</span>
         </button>
         <button className="flex flex-col items-center justify-center p-2">
-          <Bookmark className="h-6 w-6" />
+          <Bookmark className="h-5 w-5" />
           <span className="text-xs mt-1">Saved</span>
         </button>
         <button className="flex flex-col items-center justify-center p-2">
-          <User className="h-6 w-6" />
+          <User className="h-5 w-5" />
           <span className="text-xs mt-1">Profile</span>
         </button>
         <button className="flex flex-col items-center justify-center p-2">
-          <MoreHorizontal className="h-6 w-6" />
+          <MoreHorizontal className="h-5 w-5" />
           <span className="text-xs mt-1">More</span>
         </button>
       </div>

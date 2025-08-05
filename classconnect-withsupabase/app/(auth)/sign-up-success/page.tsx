@@ -30,7 +30,7 @@ export default function Page() {
               <Link href="/">
                 <Button variant={"outline"}>Home</Button>
               </Link>
-              <Link href="/auth/login">
+              <Link href="/login">
                 <Button variant={"outline"}>Login</Button>
               </Link>
             </CardContent>

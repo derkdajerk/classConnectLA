@@ -13,7 +13,7 @@ export default async function LoginPage() {
 
   // If session exists, redirect to schedule
   if (session) {
-    redirect("/auth/protected/schedule");
+    redirect("/schedule");
   }
   return (
     <div className="bg-muted flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
@@ -23,7 +23,7 @@ export default async function LoginPage() {
             <div className="bg-primary text-primary-foreground flex size-6 items-center justify-center rounded-md">
               <GalleryVerticalEnd className="size-4" />
             </div>
-            Derk Inc.
+            ClassConnectLA
           </a>
         </Link>
         <LoginForm />

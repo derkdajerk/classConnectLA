@@ -27,7 +27,7 @@ export async function AuthButton() {
       {/* Button row - shown below greeting on mobile, inline on desktop */}
       <div className="flex gap-2 items-center w-full md:w-auto justify-center md:justify-start md:mt-0">
         <LogoutButton />
-        <Link href={"/auth/protected/schedule"}>
+        <Link href={"/schedule"}>
           <Button size="sm">Schedule</Button>
         </Link>
         <Link href="/">
@@ -41,10 +41,10 @@ export async function AuthButton() {
   ) : (
     <div className="flex gap-2 mt-2 mb-2 w-full justify-center">
       <Button asChild size="md" variant={"outline"}>
-        <Link href="/auth/login">Sign in</Link>
+        <Link href="/login">Sign in</Link>
       </Button>
       <Button asChild size="md" variant={"default"}>
-        <Link href="/auth/sign-up">Sign up</Link>
+        <Link href="/sign-up">Sign up</Link>
       </Button>
     </div>
   );
