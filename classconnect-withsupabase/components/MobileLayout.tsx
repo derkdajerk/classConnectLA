@@ -5,7 +5,15 @@ import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Dialog, DialogContent, DialogTrigger } from "./ui/dialog";
-import { Search as SearchIcon, Calendar, X } from "lucide-react";
+import {
+  Search as SearchIcon,
+  Calendar,
+  X,
+  Home,
+  Bookmark,
+  User,
+  MoreHorizontal,
+} from "lucide-react";
 import { Card, CardContent } from "./ui/card";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { Separator } from "./ui/separator";
@@ -143,10 +151,10 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
   };
 
   return (
-    <main className="flex flex-col w-full min-h-screen">
+    <main className="flex flex-col w-full h-[100dvh] fixed inset-0 overflow-hidden pb-[env(safe-area-inset-bottom)] pt-[env(safe-area-inset-top)]">
       {/* Header */}
-      <div className="sticky top-0 z-50 flex items-center justify-between bg-white dark:bg-gray-950 px-4 py-3 shadow-sm">
-        <h1 className="text-lg font-bold">ClassConnect</h1>
+      <div className="flex items-center justify-between bg-white dark:bg-gray-950 px-4 py-3 sticky top-0 z-50">
+        <h1 className="text-lg font-bold">ClassConnectLA</h1>
         <div className="flex gap-2">
           <Sheet>
             <SheetTrigger asChild>
@@ -214,53 +222,79 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
         {isLoading && <Progress value={progress} className="h-1" />}
       </div>
 
-      {/* Studio Accordion */}
-      <div className="px-4 py-2 space-y-2 flex-1 w-full">
-        {studios.map((studio) => (
-          <Card key={studio.id} className="overflow-hidden w-full">
-            <button
-              className="flex w-full items-center justify-between p-3"
-              onClick={() =>
-                setOpenStudioId(openStudioId === studio.id ? "" : studio.id)
-              }
-            >
-              <div className="flex items-center gap-2">
-                <Image
-                  src={`/${studio.id}.webp`}
-                  alt={studio.name}
-                  width={30}
-                  height={30}
-                  className="rounded-sm"
-                  onError={(e) => {
-                    // Fallback if image fails to load
-                    e.currentTarget.style.display = "none";
-                  }}
-                />
-                <span className="font-semibold">{studio.name}</span>
-              </div>
-              {openStudioId === studio.id ? (
-                <ChevronUp className="h-5 w-5" />
-              ) : (
-                <ChevronDown className="h-5 w-5" />
+      {/* Content Area - Scrollable */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="px-4 py-2 space-y-2 w-full">
+          {studios.map((studio) => (
+            <Card key={studio.id} className="overflow-hidden w-full">
+              <button
+                className="flex w-full items-center justify-between p-3"
+                onClick={() =>
+                  setOpenStudioId(openStudioId === studio.id ? "" : studio.id)
+                }
+              >
+                <div className="flex items-center gap-2">
+                  <Image
+                    src={`/${studio.id}.webp`}
+                    alt={studio.name}
+                    width={30}
+                    height={30}
+                    className="rounded-sm"
+                    onError={(e) => {
+                      // Fallback if image fails to load
+                      e.currentTarget.style.display = "none";
+                    }}
+                  />
+                  <span className="font-semibold">{studio.name}</span>
+                </div>
+                {openStudioId === studio.id ? (
+                  <ChevronUp className="h-5 w-5" />
+                ) : (
+                  <ChevronDown className="h-5 w-5" />
+                )}
+              </button>
+              {openStudioId === studio.id && (
+                <>
+                  <Separator />
+                  <CardContent className="p-0">
+                    <div className="py-2">
+                      <ClassScrollBar
+                        studioName={studio.id}
+                        danceClassList={danceClasses[studio.id] || []}
+                        isSearchTerm={Boolean(searchTerm?.trim())}
+                        isMobile={true}
+                      />
+                    </div>
+                  </CardContent>
+                </>
               )}
-            </button>
-            {openStudioId === studio.id && (
-              <>
-                <Separator />
-                <CardContent className="p-0">
-                  <div className="py-2">
-                    <ClassScrollBar
-                      studioName={studio.id}
-                      danceClassList={danceClasses[studio.id] || []}
-                      isSearchTerm={Boolean(searchTerm?.trim())}
-                      isMobile={true}
-                    />
-                  </div>
-                </CardContent>
-              </>
-            )}
-          </Card>
-        ))}
+            </Card>
+          ))}
+        </div>
+      </div>
+
+      {/* iOS-style Bottom Navigation */}
+      <div className="flex items-center justify-around bg-white dark:bg-gray-950 border-t border-gray-200 dark:border-gray-800 py-2 px-4 mt-auto pb-[env(safe-area-inset-bottom)] sticky bottom-0">
+        <button className="flex flex-col items-center justify-center p-2 text-primary">
+          <Home className="h-6 w-6" />
+          <span className="text-xs mt-1">Home</span>
+        </button>
+        <button className="flex flex-col items-center justify-center p-2">
+          <Calendar className="h-6 w-6" />
+          <span className="text-xs mt-1">Schedule</span>
+        </button>
+        <button className="flex flex-col items-center justify-center p-2">
+          <Bookmark className="h-6 w-6" />
+          <span className="text-xs mt-1">Saved</span>
+        </button>
+        <button className="flex flex-col items-center justify-center p-2">
+          <User className="h-6 w-6" />
+          <span className="text-xs mt-1">Profile</span>
+        </button>
+        <button className="flex flex-col items-center justify-center p-2">
+          <MoreHorizontal className="h-6 w-6" />
+          <span className="text-xs mt-1">More</span>
+        </button>
       </div>
     </main>
   );

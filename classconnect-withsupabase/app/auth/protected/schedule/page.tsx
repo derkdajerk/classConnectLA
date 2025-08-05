@@ -30,12 +30,10 @@ export default function Home() {
   // Render either mobile or desktop layout based on screen size
   if (isMobile) {
     return (
-      <div className="w-full">
-        <MobileLayout
-          searchTerm={debouncedSearchTerm}
-          setSearchTerm={setSearchTerm}
-        />
-      </div>
+      <MobileLayout
+        searchTerm={debouncedSearchTerm}
+        setSearchTerm={setSearchTerm}
+      />
     );
   }
 

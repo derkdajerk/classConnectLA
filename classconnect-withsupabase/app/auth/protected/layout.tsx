@@ -10,8 +10,8 @@ export default function ProtectedLayout({
   children: React.ReactNode;
 }) {
   return (
-    <main className="min-h-screen flex flex-col overflow-x-hidden w-full">
-      <div className="flex-1 w-full flex flex-col">
+    <main className="flex flex-col overflow-x-hidden w-full flex-1">
+      <div className="w-full flex flex-col min-h-screen">
         <nav className="w-full flex justify-center border-b border-b-foreground/10 min-h-16">
           <div className="w-full max-w-5xl flex flex-col md:flex-row justify-between p-2 px-3 md:px-5 text-sm">
             {/* Mobile: ClassConnect on its own row at top */}
@@ -22,20 +22,20 @@ export default function ProtectedLayout({
             {/* Desktop: Regular row layout */}
             <div className="flex w-full justify-between items-center">
               <div className="font-semibold text-2xl hidden md:block">
-                <Link href={"/"}>ClassConnect</Link>
+                <Link href={"/"}>ClassConnectLA</Link>
               </div>
 
               {/* Auth content */}
-              <div className="w-full md:w-auto">
+              <div className="w-full md:w-auto max-md:hidden">
                 {!hasEnvVars ? <EnvVarWarning /> : <AuthButton />}
               </div>
             </div>
           </div>
         </nav>
-        <div className="flex-1 flex flex-col gap-20 min-h-[1500px] mt-1 w-full max-w-none">
+        <div className="flex-grow flex flex-col w-full max-w-none">
           {children}
         </div>
-        <footer className="w-full flex items-center justify-center border-t mx-auto text-center text-muted-foreground text-sm gap-8 py-16">
+        <footer className="w-full hidden md:flex items-center justify-center border-t mx-auto text-center text-muted-foreground text-sm gap-8 py-4 mt-auto">
           <p>
             Contact:{" "}
             <a href="mailto:derek@derektrauner.com" className="">
