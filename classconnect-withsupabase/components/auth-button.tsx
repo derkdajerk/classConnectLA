@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Button } from "./ui/button";
 import { createClient } from "@/lib/supabase/server";
 import { LogoutButton } from "./logout-button";
+import { HomeIcon } from "lucide-react";
 
 export async function AuthButton() {
   const supabase = await createClient();
@@ -27,13 +28,15 @@ export async function AuthButton() {
       {/* Button row - shown below greeting on mobile, inline on desktop */}
       <div className="flex gap-2 items-center w-full md:w-auto justify-center md:justify-start md:mt-0">
         <LogoutButton />
-        <Link href={"/schedule"}>
-          <Button size="sm">Schedule</Button>
+        <Link href={"/schedule"} className="p-3">
+          <Button variant={"default"}>Schedule</Button>
         </Link>
         <Link href="/">
-          <Button size="sm" className="md:flex">
+          <Button iconSize="md" className="md:flex">
             <span className="md:inline hidden">Home</span>
-            <span className="inline md:hidden">🏠︎</span>
+            <span className="inline md:hidden">
+              <HomeIcon />
+            </span>
           </Button>
         </Link>
       </div>

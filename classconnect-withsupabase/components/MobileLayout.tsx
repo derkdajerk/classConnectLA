@@ -15,6 +15,10 @@ import {
   MoreHorizontal,
   MapPin,
   CalendarIcon,
+  MoreHorizontalIcon,
+  FilterIcon,
+  SlidersHorizontal,
+  CalendarDaysIcon,
 } from "lucide-react";
 import { Card, CardContent } from "./ui/card";
 import { Separator } from "./ui/separator";
@@ -31,6 +35,7 @@ import { DanceClass } from "@/lib/danceclass";
 interface MobileLayoutProps {
   searchTerm: string;
   setSearchTerm: React.Dispatch<React.SetStateAction<string>>;
+  debouncedSearchTerm: string;
 }
 
 const studios = [
@@ -38,12 +43,13 @@ const studios = [
   { id: "TMILLY", name: "TMILLY" },
   { id: "ML", name: "ML" },
   { id: "PLAYGROUND", name: "PLAYGROUND" },
-  { id: "EIGHTYEIGHT", name: "EIGHTYEIGHT" },
+  { id: "EIGHTYEIGHT", name: "88" },
 ];
 
 const MobileLayout: React.FC<MobileLayoutProps> = ({
   searchTerm,
   setSearchTerm,
+  debouncedSearchTerm,
 }) => {
   // State for mobile components
   const [openStudioId, setOpenStudioId] = useState<string>(studios[0]?.id);
@@ -133,10 +139,10 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
         const formattedDate = formatDateForApi(selectedDate);
 
         let classes;
-        if (searchTerm.trim()) {
+        if (debouncedSearchTerm.trim()) {
           classes = await fetchStudioClassesBySearchAndTime(
             openStudioId,
-            searchTerm,
+            debouncedSearchTerm,
             timeRange
           );
         } else {
@@ -159,7 +165,7 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
     };
 
     loadClassesForStudio();
-  }, [openStudioId, selectedDate, searchTerm, timeRange]);
+  }, [openStudioId, selectedDate, debouncedSearchTerm, timeRange]);
 
   // Navigate to previous week
   const goToPreviousWeek = () => {
@@ -185,25 +191,28 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
   return (
     <main className="flex flex-col w-full h-[100dvh] fixed inset-0 overflow-hidden pb-[env(safe-area-inset-bottom)] pt-[env(safe-area-inset-top)]">
       {/* Header */}
-      <div className="flex items-center justify-between bg-white dark:bg-gray-950 px-4 py-3 sticky top-0 z-50">
+      <div className="flex items-center justify-between bg-gray-200 dark:bg-gray-950 px-4 py-3 sticky top-0 z-50">
         <Link href={"/"} className="flex items-center">
-          <MapPin className="h-5 w-5 mr-2" />
-          <h1 className="text-2xl font-bold">ClassConnectLA</h1>
+          <MapPin className="h-6 w-6 mr-2" />
+          <h1 className="text-xl font-bold">ClassConnectLA</h1>
         </Link>
-        <div className="flex gap-3">
-          <Button size="icon" variant="ghost">
-            <CalendarIcon className="h-5 w-5" />
+        <div className="flex gap-2">
+          <Button iconSize="lg" variant="ghost">
+            <SlidersHorizontal />
+          </Button>
+          <Button iconSize="lg" variant="ghost">
+            <CalendarDaysIcon />
           </Button>
           <Sheet>
             <SheetTrigger asChild>
-              <Button size="icon" variant="ghost">
-                <SearchIcon className="h-5 w-5" />
+              <Button iconSize="lg" variant="ghost">
+                <SearchIcon />
               </Button>
             </SheetTrigger>
             <SheetContent side="top">
               <div className="flex gap-2 pt-4">
                 <Input
-                  placeholder="Search classes or instructors..."
+                  placeholder="Search Teachers/Classes/Styles"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="flex-1"
@@ -224,11 +233,11 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
       </div>
 
       {/* Studio Navigation Tabs */}
-      <div className="flex whitespace-nowrap py-3 px-4 border-b bg-white dark:bg-gray-950 shadow-sm mx-auto w-full">
+      <div className="flex whitespace-nowrap py-3 justify-around border-b bg-white dark:bg-gray-950 shadow-sm mx-auto w-full">
         {studios.map((studio) => (
           <button
             key={studio.id}
-            className={`px-4 py-2 text-sm font-medium mx-1 rounded-md ${
+            className={`px-2 py-2 text-sm font-medium mx-1 rounded-md ${
               openStudioId === studio.id
                 ? "bg-primary/10 text-primary font-semibold"
                 : "text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800"
@@ -293,9 +302,15 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
               const isSelected =
                 selectedDate.toDateString() === date.toDateString();
               const day = date.getDate();
-              const dayOfWeek = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"][
-                date.getDay()
-              ];
+              const dayOfWeek = [
+                "Sun",
+                "Mon",
+                "Tue",
+                "Wed",
+                "Thu",
+                "Fri",
+                "Sat",
+              ][date.getDay()];
 
               return (
                 <div
@@ -351,7 +366,7 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
                   <ClassScrollBar
                     studioName={openStudioId}
                     danceClassList={danceClasses[openStudioId] || []}
-                    isSearchTerm={Boolean(searchTerm?.trim())}
+                    isSearchTerm={Boolean(debouncedSearchTerm?.trim())}
                     isMobile={true}
                   />
                 </div>

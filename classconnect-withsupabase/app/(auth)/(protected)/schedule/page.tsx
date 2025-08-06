@@ -1,6 +1,5 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useDebounce } from "react-use";
 import DesktopLayout from "@/components/DesktopLayout";
 import MobileLayout from "@/components/MobileLayout";
 
@@ -9,7 +8,14 @@ export default function Home() {
   const [debouncedSearchTerm, setdebouncedSearchTerm] = useState("");
   const [isMobile, setIsMobile] = useState(false);
 
-  useDebounce(() => setdebouncedSearchTerm(searchTerm), 675, [searchTerm]);
+  // Implement proper debouncing with useEffect and setTimeout
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setdebouncedSearchTerm(searchTerm);
+    }, 750);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
   useEffect(() => {
     // Function to check if screen is mobile size
@@ -31,8 +37,9 @@ export default function Home() {
   if (isMobile) {
     return (
       <MobileLayout
-        searchTerm={debouncedSearchTerm}
+        searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
+        debouncedSearchTerm={debouncedSearchTerm}
       />
     );
   }
@@ -40,8 +47,9 @@ export default function Home() {
   return (
     <div className="w-full">
       <DesktopLayout
-        searchTerm={debouncedSearchTerm}
+        searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
+        debouncedSearchTerm={debouncedSearchTerm}
       />
     </div>
   );

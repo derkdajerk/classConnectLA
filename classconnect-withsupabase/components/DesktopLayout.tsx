@@ -7,11 +7,13 @@ import Search from "./Search";
 interface DesktopLayoutProps {
   searchTerm: string;
   setSearchTerm: React.Dispatch<React.SetStateAction<string>>;
+  debouncedSearchTerm: string;
 }
 
 const DesktopLayout: React.FC<DesktopLayoutProps> = ({
   searchTerm,
   setSearchTerm,
+  debouncedSearchTerm,
 }) => {
   return (
     <main className="flex flex-col w-full">
@@ -23,7 +25,7 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
         setSearchTerm={setSearchTerm}
         className="text-center"
       />
-      <AllPageContent searchTerm={searchTerm} />
+      <AllPageContent searchTerm={debouncedSearchTerm} />
     </main>
   );
 };
