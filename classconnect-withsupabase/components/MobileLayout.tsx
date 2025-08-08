@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -70,6 +70,16 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
     EIGHTYEIGHT: [],
   });
   const [timeRange] = useState({ start: "", end: "" });
+
+  // Refs for smooth horizontal dragging on date strip
+  const dateContainerRef = useRef<HTMLDivElement | null>(null);
+  const baseTranslateXRef = useRef<number>(0);
+  const touchStartXRef = useRef<number>(0);
+  const isDraggingRef = useRef<boolean>(false);
+  const currentTranslateXRef = useRef<number>(0);
+  const animationTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null
+  );
 
   // Generate dates for a specific week
   const generateWeekDates = (startDate: Date) => {
@@ -188,6 +198,161 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
     setSelectedDate(date);
   };
 
+  // Smooth drag handlers for date strip
+  const handleTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
+    const container = dateContainerRef.current;
+    if (!container) return;
+    if (animationTimeoutRef.current) {
+      clearTimeout(animationTimeoutRef.current);
+      animationTimeoutRef.current = null;
+    }
+    isDraggingRef.current = true;
+    touchStartXRef.current = event.touches[0].clientX;
+    currentTranslateXRef.current = 0;
+    container.style.transition = "none";
+  };
+
+  const handleTouchMove = (event: React.TouchEvent<HTMLDivElement>) => {
+    const container = dateContainerRef.current;
+    if (!container || !isDraggingRef.current) return;
+    const currentX = event.touches[0].clientX;
+    const deltaX = currentX - touchStartXRef.current;
+    currentTranslateXRef.current = deltaX;
+    container.style.transform = `translateX(${
+      baseTranslateXRef.current + deltaX
+    }px)`;
+  };
+
+  const animateToAndThenReset = (
+    targetTranslateX: number,
+    onAfter?: () => void
+  ) => {
+    const container = dateContainerRef.current;
+    if (!container) return;
+    container.style.transition = "transform 280ms ease-out";
+    container.style.transform = `translateX(${targetTranslateX}px)`;
+    animationTimeoutRef.current = setTimeout(() => {
+      // After animation, caller will typically update week.
+      // Do not force transform to 0; the caller will recenter.
+      container.style.transition = "none";
+      if (onAfter) onAfter();
+    }, 280);
+  };
+
+  const handleTouchEnd = () => {
+    const container = dateContainerRef.current;
+    if (!container) return;
+    const pageWidth = container.parentElement?.clientWidth || window.innerWidth;
+    const threshold = Math.max(40, Math.floor(pageWidth * 0.18)); // ~18% of width, min 40px
+    const finalDelta = currentTranslateXRef.current;
+
+    isDraggingRef.current = false;
+
+    // Decide action based on drag distance
+    if (finalDelta <= -threshold) {
+      // Slide left to next week (to the third page)
+      animateToAndThenReset(baseTranslateXRef.current - pageWidth, () => {
+        // Update week to next and recenter to middle page without animation
+        const nextWeekStart = new Date(currentWeekStartDate);
+        nextWeekStart.setDate(nextWeekStart.getDate() + 7);
+        setCurrentWeekStartDate(nextWeekStart);
+        setDates(generateWeekDates(nextWeekStart));
+        // Keep the selected day aligned by advancing it a week
+        const nextSelected = new Date(selectedDate);
+        nextSelected.setDate(nextSelected.getDate() + 7);
+        setSelectedDate(nextSelected);
+      });
+    } else if (finalDelta >= threshold) {
+      // Slide right to previous week (to the first page)
+      animateToAndThenReset(baseTranslateXRef.current + pageWidth, () => {
+        const prevWeekStart = new Date(currentWeekStartDate);
+        prevWeekStart.setDate(prevWeekStart.getDate() - 7);
+        setCurrentWeekStartDate(prevWeekStart);
+        setDates(generateWeekDates(prevWeekStart));
+        // Keep the selected day aligned by moving it back a week
+        const prevSelected = new Date(selectedDate);
+        prevSelected.setDate(prevSelected.getDate() - 7);
+        setSelectedDate(prevSelected);
+      });
+    } else {
+      // Not enough drag, snap back smoothly to middle page
+      animateToAndThenReset(baseTranslateXRef.current);
+    }
+  };
+
+  // Cleanup pending animation timers on unmount
+  useEffect(() => {
+    return () => {
+      if (animationTimeoutRef.current) {
+        clearTimeout(animationTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  // Keep the track centered on the current week page. Do not move on day selection.
+  useEffect(() => {
+    const container = dateContainerRef.current;
+    if (!container) return;
+    const width = container.parentElement?.clientWidth || window.innerWidth;
+    baseTranslateXRef.current = -width;
+    container.style.transition = "none";
+    container.style.transform = `translateX(${baseTranslateXRef.current}px)`;
+  }, [currentWeekStartDate]);
+
+  // Helpers to render a week's dates
+  const renderWeekDates = (weekDates: Date[]) => (
+    <div className="flex justify-between w-full px-4 pb-1">
+      {weekDates.map((date, index) => {
+        const isToday = new Date().toDateString() === date.toDateString();
+        const isSelected = selectedDate.toDateString() === date.toDateString();
+        const day = date.getDate();
+        const dayOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][
+          date.getDay()
+        ];
+
+        return (
+          <div
+            key={date.toISOString()}
+            className="flex flex-col items-center"
+            style={{ width: `${100 / 7}%` }}
+          >
+            <button
+              onClick={() => handleDateSelect(date)}
+              className="flex flex-col items-center focus:outline-none w-full"
+              type="button"
+            >
+              <div
+                className={`flex items-center justify-center w-12 h-12 md:w-14 md:h-14 rounded-full shadow-sm 
+                        ${
+                          isSelected
+                            ? "bg-primary text-primary-foreground"
+                            : isToday
+                            ? "border-2 border-primary"
+                            : "bg-background border border-gray-300 dark:border-gray-700"
+                        }
+                      `}
+              >
+                <span className="text-lg font-medium">{day}</span>
+              </div>
+              <span className="text-xs mt-1 font-medium">
+                {index === 0 && isToday ? "Today" : dayOfWeek}
+              </span>
+            </button>
+          </div>
+        );
+      })}
+    </div>
+  );
+
+  // Compute prev/current/next week arrays
+  const prevWeekStartForView = new Date(currentWeekStartDate);
+  prevWeekStartForView.setDate(prevWeekStartForView.getDate() - 7);
+  const nextWeekStartForView = new Date(currentWeekStartDate);
+  nextWeekStartForView.setDate(nextWeekStartForView.getDate() + 7);
+  const prevWeekDates = generateWeekDates(prevWeekStartForView);
+  const currentWeekDates = generateWeekDates(currentWeekStartDate);
+  const nextWeekDates = generateWeekDates(nextWeekStartForView);
+
   return (
     <main className="flex flex-col w-full h-[100dvh] fixed inset-0 overflow-hidden pb-[env(safe-area-inset-bottom)] pt-[env(safe-area-inset-top)]">
       {/* Header */}
@@ -251,98 +416,22 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
 
       {/* Circular Date Picker with Swipe Navigation */}
       <div className="py-4 bg-white dark:bg-gray-950 border-b relative">
-        {/* Date scrolling container - page-like swipe */}
+        {/* Date scrolling container with prev/current/next pages */}
         <div className="relative overflow-hidden w-full">
           <div
-            className="flex justify-between w-full px-4 pb-1 touch-pan-x transition-transform duration-300 ease-out"
+            ref={dateContainerRef}
+            className="flex w-[300%] touch-pan-x transition-transform duration-300 ease-out"
             style={{ transform: `translateX(0px)` }}
-            id="date-container"
-            onTouchStart={(e) => {
-              const container = e.currentTarget;
-              container.dataset.touchStartX = e.touches[0].clientX.toString();
-            }}
-            onTouchEnd={(e) => {
-              const container = e.currentTarget;
-              const touchEndX = e.changedTouches[0].clientX;
-              const touchStartX = parseInt(
-                container.dataset.touchStartX || "0"
-              );
-              const swipeDistance = touchEndX - touchStartX;
-
-              // If swiped left significantly, go to next week
-              if (swipeDistance < -50) {
-                goToNextWeek();
-                // Animation effect
-                container.style.transform = "translateX(-50px)";
-                setTimeout(() => {
-                  container.style.transition = "none";
-                  container.style.transform = "translateX(0px)";
-                  setTimeout(() => {
-                    container.style.transition = "transform 300ms ease-out";
-                  }, 50);
-                }, 300);
-              }
-              // If swiped right significantly, go to previous week
-              else if (swipeDistance > 50) {
-                goToPreviousWeek();
-                // Animation effect
-                container.style.transform = "translateX(50px)";
-                setTimeout(() => {
-                  container.style.transition = "none";
-                  container.style.transform = "translateX(0px)";
-                  setTimeout(() => {
-                    container.style.transition = "transform 300ms ease-out";
-                  }, 50);
-                }, 300);
-              }
-            }}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
           >
-            {dates.map((date, index) => {
-              const isToday = new Date().toDateString() === date.toDateString();
-              const isSelected =
-                selectedDate.toDateString() === date.toDateString();
-              const day = date.getDate();
-              const dayOfWeek = [
-                "Sun",
-                "Mon",
-                "Tue",
-                "Wed",
-                "Thu",
-                "Fri",
-                "Sat",
-              ][date.getDay()];
-
-              return (
-                <div
-                  key={date.toISOString()}
-                  className="flex flex-col items-center"
-                  style={{ width: `${100 / 7}%` }}
-                >
-                  <button
-                    onClick={() => handleDateSelect(date)}
-                    className="flex flex-col items-center focus:outline-none w-full"
-                    type="button"
-                  >
-                    <div
-                      className={`flex items-center justify-center w-12 h-12 md:w-14 md:h-14 rounded-full shadow-sm 
-                        ${
-                          isSelected
-                            ? "bg-primary text-primary-foreground"
-                            : isToday
-                            ? "border-2 border-primary"
-                            : "bg-background border border-gray-300 dark:border-gray-700"
-                        }
-                      `}
-                    >
-                      <span className="text-lg font-medium">{day}</span>
-                    </div>
-                    <span className="text-xs mt-1 font-medium">
-                      {index === 0 && isToday ? "Today" : dayOfWeek}
-                    </span>
-                  </button>
-                </div>
-              );
-            })}
+            {/* Previous week */}
+            <div className="w-full">{renderWeekDates(prevWeekDates)}</div>
+            {/* Current week */}
+            <div className="w-full">{renderWeekDates(currentWeekDates)}</div>
+            {/* Next week */}
+            <div className="w-full">{renderWeekDates(nextWeekDates)}</div>
           </div>
         </div>
 
