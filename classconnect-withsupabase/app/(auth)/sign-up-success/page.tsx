@@ -27,10 +27,14 @@ export default function Page() {
               </p>
             </CardContent>
             <CardContent className="flex justify-center gap-2">
-              <Link href="/">
+              <Link href="/" legacyBehavior>
                 <Button variant={"outline"}>Home</Button>
               </Link>
+<<<<<<< Updated upstream:classconnect-withsupabase/app/(auth)/sign-up-success/page.tsx
               <Link href="/login">
+=======
+              <Link href="/auth/login" legacyBehavior>
+>>>>>>> Stashed changes:classconnect-withsupabase/app/auth/sign-up-success/page.tsx
                 <Button variant={"outline"}>Login</Button>
               </Link>
             </CardContent>

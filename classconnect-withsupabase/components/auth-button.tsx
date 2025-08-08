@@ -14,6 +14,7 @@ export async function AuthButton() {
   const displayName = user?.user_metadata.display_name || user?.email;
 
   return user ? (
+<<<<<<< Updated upstream
     <div className="flex flex-col w-full md:flex-row md:items-center gap-2 text-sm">
       {/* Desktop greeting */}
       <span className="whitespace-nowrap md:inline hidden">
@@ -40,6 +41,17 @@ export async function AuthButton() {
           </Button>
         </Link>
       </div>
+=======
+    <div className="flex items-center gap-4">
+      Hey, {displayName}!
+      <LogoutButton />
+      <Link href={"/auth/protected/schedule"} legacyBehavior>
+        <Button>Schedule</Button>
+      </Link>
+      <Link href="/" legacyBehavior>
+        <Button>Home</Button>
+      </Link>
+>>>>>>> Stashed changes
     </div>
   ) : (
     <div className="flex gap-2 mt-2 mb-2 w-full justify-center">
