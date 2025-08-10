@@ -39,6 +39,7 @@ import {
 } from "./SupabaseCalls";
 import { DanceClass } from "@/lib/danceclass";
 import { TimeRangeSelector } from "./TimeRangeSelector";
+import { MobileTimeSelector } from "./MobileTimeSelector";
 
 interface MobileLayoutProps {
   searchTerm: string;
@@ -395,13 +396,16 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
                 <SlidersHorizontal className="z-10" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="top">
+            <SheetContent
+              side="top"
+              onOpenAutoFocus={(e) => e.preventDefault()}
+            >
               <div className="pt-4 space-y-3 w-full">
                 <SheetHeader>
                   <SheetTitle>Filter by time</SheetTitle>
                 </SheetHeader>
                 <div className="w-full flex flex-col items-center justify-center">
-                  <TimeRangeSelector
+                  <MobileTimeSelector
                     onTimeChange={handleTimeChange}
                     value={timeRange}
                   />

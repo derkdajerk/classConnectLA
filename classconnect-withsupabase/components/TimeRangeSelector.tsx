@@ -141,10 +141,10 @@ export function TimeRangeSelector({
               <ChevronsUpDown className="opacity-50 ml-2 shrink-0" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-[200px] p-0">
+          <PopoverContent className="w-[200px] p-0 overflow-auto overflow-y-auto">
             <Command>
               <CommandInput placeholder="Search times..." className="h-9" />
-              <CommandList>
+              <CommandList className="overflow-y-scroll">
                 <CommandEmpty>No time found.</CommandEmpty>
                 <CommandGroup>
                   {timeOptions.map(({ value, label }) => (
@@ -187,7 +187,10 @@ export function TimeRangeSelector({
               <ChevronsUpDown className="opacity-50 ml-2 shrink-0" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-[200px] p-0">
+          <PopoverContent
+            className="w-[200px] p-0"
+            onOpenAutoFocus={(e) => e.preventDefault()}
+          >
             <Command>
               <CommandInput placeholder="Search times..." className="h-9" />
               <CommandList>
