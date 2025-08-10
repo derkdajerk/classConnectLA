@@ -32,8 +32,6 @@ export async function GET(request: Request) {
   // URL to redirect to after sign in process completes
   const response = NextResponse.redirect(new URL(next, request.url));
   for (const cookie of supabaseResponse.cookies.getAll()) {
-    // Copy cookies from the SSR client response to the redirect response
-    // Using the overload that accepts a Cookie object
     response.cookies.set(cookie);
   }
   return response;
