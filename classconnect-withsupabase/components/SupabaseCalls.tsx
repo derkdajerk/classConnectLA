@@ -40,11 +40,14 @@ export const fetchStudioClassesBySearchAndTime = async (
       query = query.eq("date", today);
     }
 
-    if (timeRange.start) {
-      query = query.gte("time", timeRange.start);
+    const normalizedStart = timeRange.start ? `${timeRange.start}:00` : "";
+    const normalizedEnd = timeRange.end ? `${timeRange.end}:00` : "";
+
+    if (normalizedStart) {
+      query = query.gte("time", normalizedStart);
     }
-    if (timeRange.end) {
-      query = query.lte("time", timeRange.end);
+    if (normalizedEnd) {
+      query = query.lte("time", normalizedEnd);
     }
 
     // Always order by date and time for consistency
@@ -104,11 +107,14 @@ export const fetchStudioClassesByDateAndTime = async (
       .eq("studio_name", studioName)
       .eq("date", date);
 
-    // Only apply time filters if both start and end are present, or neither are present
-    if (timeRange.start && timeRange.end) {
-      query = query
-        .gte("time", timeRange.start + ":00")
-        .lte("time", timeRange.end + ":00");
+    const normalizedStart = timeRange.start ? `${timeRange.start}:00` : "";
+    const normalizedEnd = timeRange.end ? `${timeRange.end}:00` : "";
+
+    if (normalizedStart) {
+      query = query.gte("time", normalizedStart);
+    }
+    if (normalizedEnd) {
+      query = query.lte("time", normalizedEnd);
     }
 
     query = query.order("time", { ascending: true });

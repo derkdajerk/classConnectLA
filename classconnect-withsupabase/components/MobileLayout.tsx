@@ -2,7 +2,13 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+  SheetHeader,
+  SheetTitle,
+} from "./ui/sheet";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import {
@@ -19,6 +25,7 @@ import {
   FilterIcon,
   SlidersHorizontal,
   CalendarDaysIcon,
+  Clock,
 } from "lucide-react";
 import { Card, CardContent } from "./ui/card";
 import { Separator } from "./ui/separator";
@@ -31,11 +38,17 @@ import {
   fetchStudioClassesBySearchAndTime,
 } from "./SupabaseCalls";
 import { DanceClass } from "@/lib/danceclass";
+import { TimeRangeSelector } from "./TimeRangeSelector";
 
 interface MobileLayoutProps {
   searchTerm: string;
   setSearchTerm: React.Dispatch<React.SetStateAction<string>>;
   debouncedSearchTerm: string;
+}
+
+interface TimeRange {
+  start: string;
+  end: string;
 }
 
 const studios = [
@@ -69,7 +82,7 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
     PLAYGROUND: [],
     EIGHTYEIGHT: [],
   });
-  const [timeRange] = useState({ start: "", end: "" });
+  const [timeRange, setTimeRange] = useState<TimeRange>({ start: "", end: "" });
 
   // Refs for smooth horizontal dragging on date strip
   const dateContainerRef = useRef<HTMLDivElement | null>(null);
@@ -176,6 +189,10 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
 
     loadClassesForStudio();
   }, [openStudioId, selectedDate, debouncedSearchTerm, timeRange]);
+
+  const handleTimeChange = ({ start, end }: TimeRange): void => {
+    setTimeRange({ start, end });
+  };
 
   // Navigate to previous week
   const goToPreviousWeek = () => {
@@ -362,9 +379,36 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
           <h1 className="text-xl font-bold">ClassConnectLA</h1>
         </Link>
         <div className="flex gap-2">
-          <Button iconSize="lg" variant="ghost">
-            <SlidersHorizontal />
-          </Button>
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button iconSize="lg" variant="ghost" className="relative">
+                {/** Clock summary indicator */}
+                {(timeRange.start || timeRange.end) && (
+                  <span className="absolute -top-1 -left-1 h-6 w-6 rounded-full text-primary-foreground grid place-items-center">
+                    <Clock
+                      className="h-0.5 w-0.5 z-0"
+                      color="green"
+                      strokeWidth={2}
+                    />
+                  </span>
+                )}
+                <SlidersHorizontal className="z-10" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="top">
+              <div className="pt-4 space-y-3 w-full">
+                <SheetHeader>
+                  <SheetTitle>Filter by time</SheetTitle>
+                </SheetHeader>
+                <div className="w-full flex flex-col items-center justify-center">
+                  <TimeRangeSelector
+                    onTimeChange={handleTimeChange}
+                    value={timeRange}
+                  />
+                </div>
+              </div>
+            </SheetContent>
+          </Sheet>
           <Button iconSize="lg" variant="ghost">
             <CalendarDaysIcon />
           </Button>
@@ -375,6 +419,9 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
               </Button>
             </SheetTrigger>
             <SheetContent side="top">
+              <SheetHeader>
+                <SheetTitle className="sr-only">Search</SheetTitle>
+              </SheetHeader>
               <div className="flex gap-2 pt-4">
                 <Input
                   placeholder="Search Teachers/Classes/Styles"
