@@ -1,7 +1,7 @@
-import { createClient } from "@/lib/supabase/server";
 import { type EmailOtpType } from "@supabase/supabase-js";
-import { redirect } from "next/navigation";
-import { type NextRequest } from "next/server";
+import { createServerClient } from "@supabase/ssr";
+import { NextResponse, type NextRequest } from "next/server";
+import { cookies } from "next/headers";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -9,22 +9,48 @@ export async function GET(request: NextRequest) {
   const type = searchParams.get("type") as EmailOtpType | null;
   const next = searchParams.get("next") ?? "/";
 
-  if (token_hash && type) {
-    const supabase = await createClient();
+  const cookieStore = await cookies();
+  const interim = NextResponse.next();
 
-    const { error } = await supabase.auth.verifyOtp({
-      type,
-      token_hash,
-    });
-    if (!error) {
-      // redirect user to specified redirect URL or root of app
-      redirect(next);
-    } else {
-      // redirect the user to an error page with some instructions
-      redirect(`//error?error=${error?.message}`);
+  if (token_hash && type) {
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_OR_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return cookieStore.getAll();
+          },
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              interim.cookies.set(name, value, options)
+            );
+          },
+        },
+      }
+    );
+
+    const { error } = await supabase.auth.verifyOtp({ type, token_hash });
+
+    const redirectUrl = error
+      ? `/error?error=${encodeURIComponent(error.message)}`
+      : next;
+
+    const response = NextResponse.redirect(new URL(redirectUrl, request.url));
+    for (const cookie of interim.cookies.getAll()) {
+      response.cookies.set(cookie);
     }
+    return response;
   }
 
-  // redirect the user to an error page with some instructions
-  redirect(`//error?error=No token hash or type`);
+  const response = NextResponse.redirect(
+    new URL(
+      `/error?error=${encodeURIComponent("No token hash or type")}`,
+      request.url
+    )
+  );
+  for (const cookie of interim.cookies.getAll()) {
+    response.cookies.set(cookie);
+  }
+  return response;
 }
