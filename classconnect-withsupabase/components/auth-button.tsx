@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Button } from "./ui/button";
 import { createClient } from "@/lib/supabase/server";
 import { LogoutButton } from "./logout-button";
+import { HomeIcon } from "lucide-react";
 
 export async function AuthButton() {
   const supabase = await createClient();
@@ -13,23 +14,40 @@ export async function AuthButton() {
   const displayName = user?.user_metadata.display_name || user?.email;
 
   return user ? (
-    <div className="flex items-center gap-4">
-      Hey, {displayName}!
-      <LogoutButton />
-      <Link href={"/auth/protected/schedule"}>
-        <Button>Schedule</Button>
-      </Link>
-      <Link href="/">
-        <Button>Home</Button>
-      </Link>
+    <div className="flex flex-col w-full md:flex-row md:items-center gap-2 text-sm">
+      {/* Desktop greeting */}
+      <span className="whitespace-nowrap md:inline hidden">
+        Hey, {displayName}!
+      </span>
+
+      {/* Mobile greeting - centered below app name */}
+      <span className="whitespace-nowrap w-full text-center md:hidden">
+        Hey, {displayName}!
+      </span>
+
+      {/* Button row - shown below greeting on mobile, inline on desktop */}
+      <div className="flex gap-2 items-center w-full md:w-auto justify-center md:justify-start md:mt-0">
+        <LogoutButton />
+        <Link href={"/schedule"} className="p-3">
+          <Button variant={"default"}>Schedule</Button>
+        </Link>
+        <Link href="/">
+          <Button iconSize="md" className="md:flex">
+            <span className="md:inline hidden">Home</span>
+            <span className="inline md:hidden">
+              <HomeIcon />
+            </span>
+          </Button>
+        </Link>
+      </div>
     </div>
   ) : (
-    <div className="flex gap-2">
-      <Button asChild size="sm" variant={"outline"}>
-        <Link href="/auth/login">Sign in</Link>
+    <div className="flex gap-2 mt-2 mb-2 w-full justify-center">
+      <Button asChild size="md" variant={"outline"}>
+        <Link href="/login">Sign in</Link>
       </Button>
-      <Button asChild size="sm" variant={"default"}>
-        <Link href="/auth/sign-up">Sign up</Link>
+      <Button asChild size="md" variant={"default"}>
+        <Link href="/sign-up">Sign up</Link>
       </Button>
     </div>
   );

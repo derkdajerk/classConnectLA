@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 import React from "react";
 import { useState, useEffect, useCallback, useMemo } from "react";
@@ -295,10 +296,8 @@ const AllPageContent = ({ searchTerm }: AllPageContentProps) => {
   };
 
   const handleTimeChange = ({ start, end }: TimeRange): void => {
-    // Update timeRange state first
     setTimeRange({ start, end });
 
-    // Use the new values directly instead of depending on state update
     const newTimeRange = { start, end };
 
     if (searchTerm.trim()) {
@@ -335,7 +334,7 @@ const AllPageContent = ({ searchTerm }: AllPageContentProps) => {
       </Pagination>
 
       <div id="timeboxes" className="mt-4">
-        <TimeRangeSelector onTimeChange={handleTimeChange} />
+        <TimeRangeSelector onTimeChange={handleTimeChange} value={timeRange} />
       </div>
 
       <div className="flex justify-center w-full mb-2 mt-2">

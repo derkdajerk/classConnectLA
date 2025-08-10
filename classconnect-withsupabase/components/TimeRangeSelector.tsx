@@ -30,6 +30,7 @@ interface TimeRange {
 
 interface TimeRangeSelectorProps {
   onTimeChange: (timeRange: TimeRange) => void;
+  value?: TimeRange;
 }
 
 const generateTimes = (): TimeOption[] => {
@@ -58,6 +59,7 @@ const isValidTimeRange = (start: string, end: string): boolean => {
 
 export function TimeRangeSelector({
   onTimeChange,
+  value,
 }: TimeRangeSelectorProps): JSX.Element {
   const [startOpen, setStartOpen] = React.useState<boolean>(false);
   const [endOpen, setEndOpen] = React.useState<boolean>(false);
@@ -66,36 +68,50 @@ export function TimeRangeSelector({
 
   const timeOptions = useMemo<TimeOption[]>(() => generateTimes(), []);
 
+  // Sync internal state with controlled value when provided
+  React.useEffect(() => {
+    if (value) {
+      setStartValue(value.start ?? "");
+      setEndValue(value.end ?? "");
+    }
+  }, [value]);
+
   const handleStartTimeSelect = (currentValue: string): void => {
     const newStartValue = currentValue === startValue ? "" : currentValue;
 
-    if (endValue && !isValidTimeRange(newStartValue, endValue)) {
+    // If both are present and invalid, block
+    if (
+      endValue &&
+      newStartValue &&
+      !isValidTimeRange(newStartValue, endValue)
+    ) {
       toast.error("Start time must be before end time");
       return;
     }
 
     setStartValue(newStartValue);
     setStartOpen(false);
-    // Only trigger if we have both times or clearing both
-    if (endValue || newStartValue === "") {
-      onTimeChange({ start: newStartValue, end: endValue });
-    }
+    // Always propagate, supporting partial selection
+    onTimeChange({ start: newStartValue, end: endValue });
   };
 
   const handleEndTimeSelect = (currentValue: string): void => {
     const newEndValue = currentValue === endValue ? "" : currentValue;
 
-    if (startValue && !isValidTimeRange(startValue, newEndValue)) {
+    // If both are present and invalid, block
+    if (
+      startValue &&
+      newEndValue &&
+      !isValidTimeRange(startValue, newEndValue)
+    ) {
       toast.error("End time must be after start time");
       return;
     }
 
     setEndValue(newEndValue);
     setEndOpen(false);
-    // Only trigger if we have both times or clearing both
-    if (startValue || newEndValue === "") {
-      onTimeChange({ start: startValue, end: newEndValue });
-    }
+    // Always propagate, supporting partial selection
+    onTimeChange({ start: startValue, end: newEndValue });
   };
 
   const clearTimeRange = (): void => {
@@ -107,7 +123,7 @@ export function TimeRangeSelector({
 
   return (
     <>
-      <div className="flex gap-4">
+      <div className="grid w-full max-w-[420px] mx-auto grid-cols-2 gap-3 items-center">
         {/* Start Time Selector */}
         <Popover open={startOpen} onOpenChange={setStartOpen}>
           <PopoverTrigger asChild>
@@ -115,12 +131,14 @@ export function TimeRangeSelector({
               variant="outline"
               role="combobox"
               aria-expanded={startOpen}
-              className="w-[200px] justify-between"
+              className="w-full justify-between overflow-hidden px-3"
             >
-              {startValue
-                ? timeOptions.find((time) => time.value === startValue)?.label
-                : "Select start time..."}
-              <ChevronsUpDown className="opacity-50" />
+              <span className="truncate">
+                {startValue
+                  ? timeOptions.find((time) => time.value === startValue)?.label
+                  : "Select start time..."}
+              </span>
+              <ChevronsUpDown className="opacity-50 ml-2 shrink-0" />
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-[200px] p-0">
@@ -159,12 +177,14 @@ export function TimeRangeSelector({
               variant="outline"
               role="combobox"
               aria-expanded={startOpen}
-              className="w-[200px] justify-between"
+              className="w-full justify-between overflow-hidden px-3"
             >
-              {endValue
-                ? timeOptions.find((time) => time.value === endValue)?.label
-                : "Select end time..."}
-              <ChevronsUpDown className="opacity-50" />
+              <span className="truncate">
+                {endValue
+                  ? timeOptions.find((time) => time.value === endValue)?.label
+                  : "Select end time..."}
+              </span>
+              <ChevronsUpDown className="opacity-50 ml-2 shrink-0" />
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-[200px] p-0">

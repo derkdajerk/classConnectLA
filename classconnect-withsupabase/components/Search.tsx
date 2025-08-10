@@ -21,7 +21,7 @@ const Search: React.FC<SearchProps> = ({ searchTerm, setSearchTerm }) => {
   };
 
   return (
-    <div className="flex w-full mx-auto justify-center gap-2">
+    <div className="flex w-full mx-auto justify-center gap-2 mt-2">
       <input
         className="bg-gray-300 w-full px-4 py-3 rounded-lg max-w-3xl"
         type="text"
