@@ -8,6 +8,7 @@ import {
   SheetTrigger,
   SheetHeader,
   SheetTitle,
+  SheetDescription,
 } from "./ui/sheet";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -20,9 +21,6 @@ import {
   User,
   MoreHorizontal,
   MapPin,
-  CalendarIcon,
-  MoreHorizontalIcon,
-  FilterIcon,
   SlidersHorizontal,
   CalendarDaysIcon,
   Clock,
@@ -40,6 +38,7 @@ import {
 import { DanceClass } from "@/lib/danceclass";
 import { TimeRangeSelector } from "./TimeRangeSelector";
 import { MobileTimeSelector } from "./MobileTimeSelector";
+import Calendar08 from "./calendar-08";
 
 interface MobileLayoutProps {
   searchTerm: string;
@@ -84,6 +83,7 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
     EIGHTYEIGHT: [],
   });
   const [timeRange, setTimeRange] = useState<TimeRange>({ start: "", end: "" });
+  const [calendarOpen, setCalendarOpen] = useState<boolean>(false);
 
   // Refs for smooth horizontal dragging on date strip
   const dateContainerRef = useRef<HTMLDivElement | null>(null);
@@ -214,6 +214,30 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
   // Handle date selection
   const handleDateSelect = (date: Date) => {
     setSelectedDate(date);
+  };
+
+  // Handle date selection from calendar
+  const handleCalendarDateSelect = (date: Date | undefined) => {
+    if (!date) return;
+
+    // Set the selected date
+    setSelectedDate(date);
+
+    // Update the current week to show the week containing the selected date
+    const weekStart = new Date(date);
+    weekStart.setDate(date.getDate() - date.getDay()); // Start of week (Sunday)
+    setCurrentWeekStartDate(weekStart);
+    setDates(generateWeekDates(weekStart));
+
+    // Close the calendar sheet
+    setCalendarOpen(false);
+  };
+
+  // Get disabled dates for calendar (disable all days before today)
+  const getDisabledDates = () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return { before: today };
   };
 
   // Smooth drag handlers for date strip
@@ -399,11 +423,15 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
             <SheetContent
               side="top"
               onOpenAutoFocus={(e) => e.preventDefault()}
+              onCloseAutoFocus={(e) => e.preventDefault()}
             >
               <div className="pt-4 space-y-3 w-full">
                 <SheetHeader>
                   <SheetTitle>Filter by time</SheetTitle>
                 </SheetHeader>
+                <SheetDescription className="hidden">
+                  Time Filtering
+                </SheetDescription>
                 <div className="w-full flex flex-col items-center justify-center">
                   <MobileTimeSelector
                     onTimeChange={handleTimeChange}
@@ -413,9 +441,33 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
               </div>
             </SheetContent>
           </Sheet>
-          <Button iconSize="lg" variant="ghost">
-            <CalendarDaysIcon />
-          </Button>
+          <Sheet open={calendarOpen} onOpenChange={setCalendarOpen}>
+            <SheetTrigger asChild>
+              <Button iconSize="lg" variant="ghost">
+                <CalendarDaysIcon />
+              </Button>
+            </SheetTrigger>
+            <SheetContent
+              side="top"
+              className="h-[65vh] bg-transparent border-none"
+            >
+              <SheetHeader>
+                <SheetTitle></SheetTitle>
+              </SheetHeader>
+              <SheetDescription className="hidden">
+                Month Day Selector
+              </SheetDescription>
+              <div className="flex justify-center items-center pt-6 pb-6 h-full">
+                <Calendar08
+                  selected={selectedDate}
+                  onSelect={handleCalendarDateSelect}
+                  disabled={getDisabledDates()}
+                  defaultMonth={selectedDate}
+                  className="rounded-3xl border shadow-sm bg-background"
+                />
+              </div>
+            </SheetContent>
+          </Sheet>
           <Sheet>
             <SheetTrigger asChild>
               <Button iconSize="lg" variant="ghost">
@@ -426,6 +478,9 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
               <SheetHeader>
                 <SheetTitle className="sr-only">Search</SheetTitle>
               </SheetHeader>
+              <SheetDescription className="hidden">
+                Search for Teachers, Styles, Classes
+              </SheetDescription>
               <div className="flex gap-2 pt-4">
                 <Input
                   placeholder="Search Teachers/Classes/Styles"
