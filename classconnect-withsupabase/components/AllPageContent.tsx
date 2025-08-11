@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 import React from "react";
@@ -13,6 +14,17 @@ import {
 import ClassCheckBoxs from "./ClassCheckBoxs";
 import { TimeRangeSelector } from "./TimeRangeSelector";
 import { DanceClass } from "../lib/danceclass";
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "./ui/sheet";
+import { Button } from "./ui/button";
+import { CalendarDaysIcon } from "lucide-react";
+import Calendar08 from "./calendar-08";
 
 interface AllPageContentProps {
   searchTerm: string;
@@ -60,6 +72,7 @@ const AllPageContent = ({ searchTerm }: AllPageContentProps) => {
     PLAYGROUND: false,
     EIGHTYEIGHT: false,
   });
+  const [calendarOpen, setCalendarOpen] = useState<boolean>(false);
 
   const weekDates = useMemo<Date[]>(() => {
     return Array.from({ length: 7 }, (_, i) => {
@@ -308,6 +321,29 @@ const AllPageContent = ({ searchTerm }: AllPageContentProps) => {
     }
   };
 
+  // Month calendar selection handler (reused from Mobile)
+  const handleCalendarDateSelect = (date: Date | undefined) => {
+    if (!date) return;
+
+    const weekStart = new Date(date);
+    weekStart.setDate(date.getDate() - date.getDay()); // start of week (Sunday)
+
+    setCurrentWeekStartDate(weekStart);
+    setCurrentWeekEndDate(() => {
+      const end = new Date(weekStart);
+      end.setDate(weekStart.getDate() + 6);
+      return end;
+    });
+    setSelectedIndex(date.getDay());
+    setCalendarOpen(false);
+  };
+
+  const getDisabledDates = () => {
+    const t = new Date();
+    t.setHours(0, 0, 0, 0);
+    return { before: t };
+  };
+
   const handleVisibilityChange = (
     studioName: keyof StudioVisibility,
     isVisible: boolean
@@ -332,8 +368,37 @@ const AllPageContent = ({ searchTerm }: AllPageContentProps) => {
           isNextDisabled={isNextDisabled}
         />
       </Pagination>
-
-      <div id="timeboxes" className="mt-4">
+      {/* <Sheet open={calendarOpen} onOpenChange={setCalendarOpen}>
+        <SheetTrigger asChild>
+          <Button variant="ghost" aria-label="Open month picker">
+            <CalendarDaysIcon />
+          </Button>
+        </SheetTrigger>
+        <SheetContent
+          side="top"
+          className="h-[60vh] bg-transparent border-none"
+        >
+          <SheetHeader>
+            <SheetTitle />
+          </SheetHeader>
+          <SheetDescription className="hidden">
+            Month Day Selector
+          </SheetDescription>
+          <div className="flex justify-center items-center pt-6 pb-6 h-full">
+            <Calendar08
+              selected={dates[selectedIndex] || new Date()}
+              onSelect={handleCalendarDateSelect}
+              disabled={getDisabledDates()}
+              defaultMonth={dates[selectedIndex] || new Date()}
+              className="rounded-3xl border shadow-sm bg-background"
+            />
+          </div>
+        </SheetContent>
+      </Sheet> */}
+      <div
+        id="timeboxes"
+        className="mt-4 w-full flex flex-col items-center justify-between gap-3"
+      >
         <TimeRangeSelector onTimeChange={handleTimeChange} value={timeRange} />
       </div>
 
