@@ -1,7 +1,15 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 import React, { useState, useEffect, useRef } from "react";
-import { Heart, CalendarPlus, Bell, TriangleAlert } from "lucide-react";
+import {
+  Heart,
+  CalendarPlus,
+  Bell,
+  TriangleAlert,
+  HeartOff,
+  CalendarOff,
+  BellOff,
+} from "lucide-react";
 import {
   saveClassToBookmarks,
   removeClassFromBookmarks,
@@ -331,7 +339,7 @@ const ClassScrollBar: React.FC<ClassScrollBarProps> = ({
     return (
       <div className="relative overflow-hidden bg-gray-100">
         {/* Left actions (swipe right) */}
-        <div className="absolute inset-y-0 left-0 flex items-stretch z-10">
+        {/* <div className="absolute inset-y-0 left-0 flex items-stretch z-10">
           <button
             className="bg-amber-500 text-white flex flex-col items-center justify-center text-xs font-medium"
             style={{ width: buttonWidth }}
@@ -356,7 +364,7 @@ const ClassScrollBar: React.FC<ClassScrollBarProps> = ({
             <TriangleAlert className="h-5 w-5 mb-1" />
             <span>Action</span>
           </button>
-        </div>
+        </div> */}
 
         {/* Right actions (swipe left) */}
         <div
@@ -372,7 +380,11 @@ const ClassScrollBar: React.FC<ClassScrollBarProps> = ({
               setOpenFor(null);
             }}
           >
-            <Heart className="h-5 w-5 mb-1" />
+            {isSaved ? (
+              <HeartOff className="h-5 w-5 mb-1" />
+            ) : (
+              <Heart className="h-5 w-5 mb-1" />
+            )}
             <span>{isSaved ? "Unsave" : "Save"}</span>
           </button>
           <button
@@ -385,7 +397,7 @@ const ClassScrollBar: React.FC<ClassScrollBarProps> = ({
             }}
           >
             <CalendarPlus className="h-5 w-5 mb-1" />
-            <span>{isScheduled ? "Remove" : "Add"}</span>
+            <span>{isScheduled ? "Remove" : "Add to calendar"}</span>
           </button>
         </div>
 
@@ -521,10 +533,12 @@ const ClassScrollBar: React.FC<ClassScrollBarProps> = ({
                   }}
                   className="cursor-pointer"
                 >
-                  <span className="mr-2">
-                    {savedClasses[danceClass.class_id] ? "❤️" : "🖤"}
-                  </span>
-                  {savedClasses[danceClass.class_id] ? "Saved" : "Save"}
+                  {savedClasses[danceClass.class_id] ? (
+                    <HeartOff className="mr-2 h-4 w-4 text-rose-600" />
+                  ) : (
+                    <Heart className="mr-2 h-4 w-4 text-rose-600" />
+                  )}
+                  {savedClasses[danceClass.class_id] ? "Unsave" : "Save"}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={(e) => {
@@ -533,12 +547,16 @@ const ClassScrollBar: React.FC<ClassScrollBarProps> = ({
                   }}
                   className="cursor-pointer"
                 >
-                  <span className="mr-2">📅</span>
+                  {scheduledClasses[danceClass.class_id] ? (
+                    <CalendarOff className="mr-2 h-4 w-4 text-green-600" />
+                  ) : (
+                    <CalendarPlus className="mr-2 h-4 w-4 text-green-600" />
+                  )}
                   {scheduledClasses[danceClass.class_id]
-                    ? "Remove from Schedule"
-                    : "Add to Schedule"}
+                    ? "Remove from calendar"
+                    : "Add to calendar"}
                 </DropdownMenuItem>
-                <DropdownMenuItem
+                {/* <DropdownMenuItem
                   onClick={(e) => {
                     e.stopPropagation();
                     toggleNotification(
@@ -548,10 +566,14 @@ const ClassScrollBar: React.FC<ClassScrollBarProps> = ({
                   }}
                   className="cursor-pointer"
                 >
-                  <span className="mr-2">🔔</span>
+                  {notifiedClasses[danceClass.class_id] ? (
+                    <BellOff className="mr-2 h-4 w-4 text-amber-500" />
+                  ) : (
+                    <Bell className="mr-2 h-4 w-4 text-amber-500" />
+                  )}
                   {notifiedClasses[danceClass.class_id]
-                    ? "Notifications On"
-                    : "Notify"}
+                    ? "Notifications Off"
+                    : "Notifications On"}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={(e) => {
@@ -560,9 +582,9 @@ const ClassScrollBar: React.FC<ClassScrollBarProps> = ({
                   }}
                   className="cursor-pointer"
                 >
-                  <span className="mr-2">⚠</span>
+                  <TriangleAlert className="mr-2 h-4 w-4 text-orange-600" />
                   Action
-                </DropdownMenuItem>
+                </DropdownMenuItem> */}
               </DropdownMenuContent>
             </DropdownMenu>
           )
