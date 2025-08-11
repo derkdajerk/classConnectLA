@@ -40,7 +40,7 @@ export default function RootLayout({
             richColors
             expand={false}
             closeButton={true}
-            position="bottom-right"
+            position="bottom-center"
             duration={3000}
           />
         </ThemeProvider>
