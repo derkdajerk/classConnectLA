@@ -36,9 +36,9 @@ import {
   fetchStudioClassesBySearchAndTime,
 } from "./SupabaseCalls";
 import { DanceClass } from "@/lib/danceclass";
-import { TimeRangeSelector } from "./TimeRangeSelector";
 import { MobileTimeSelector } from "./MobileTimeSelector";
 import Calendar08 from "./calendar-08";
+import BottomNavBarMobile from "./BottomNavBarMobile";
 
 interface MobileLayoutProps {
   searchTerm: string;
@@ -57,6 +57,7 @@ const studios = [
   { id: "ML", name: "ML" },
   { id: "PLAYGROUND", name: "PLAYGROUND" },
   { id: "EIGHTYEIGHT", name: "88" },
+  { id: "THESIX", name: "THE SIX" },
 ];
 
 const MobileLayout: React.FC<MobileLayoutProps> = ({
@@ -81,6 +82,7 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
     ML: [],
     PLAYGROUND: [],
     EIGHTYEIGHT: [],
+    THESIX: [],
   });
   const [timeRange, setTimeRange] = useState<TimeRange>({ start: "", end: "" });
   const [calendarOpen, setCalendarOpen] = useState<boolean>(false);
@@ -576,28 +578,7 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
       </div>
 
       {/* iOS-style Bottom Navigation */}
-      <div className="flex items-center justify-around bg-white dark:bg-gray-950 border-t border-gray-200 dark:border-gray-800 py-2 px-4 mt-auto pb-[env(safe-area-inset-bottom)] sticky bottom-0">
-        <button className="flex flex-col items-center justify-center p-2 text-primary">
-          <Home className="h-5 w-5" />
-          <span className="text-xs mt-1">Home</span>
-        </button>
-        <button className="flex flex-col items-center justify-center p-2">
-          <Calendar className="h-5 w-5" />
-          <span className="text-xs mt-1">Schedule</span>
-        </button>
-        <button className="flex flex-col items-center justify-center p-2">
-          <Bookmark className="h-5 w-5" />
-          <span className="text-xs mt-1">Saved</span>
-        </button>
-        <button className="flex flex-col items-center justify-center p-2">
-          <User className="h-5 w-5" />
-          <span className="text-xs mt-1">Profile</span>
-        </button>
-        <button className="flex flex-col items-center justify-center p-2">
-          <MoreHorizontal className="h-5 w-5" />
-          <span className="text-xs mt-1">More</span>
-        </button>
-      </div>
+      <BottomNavBarMobile />
     </main>
   );
 };

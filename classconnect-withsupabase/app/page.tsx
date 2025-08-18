@@ -40,8 +40,12 @@ export default function Home() {
           </section>
           {/* Call-to-action Buttons */}
           <section className="flex gap-4 flex-wrap justify-center mt-8">
-            <Button variant="outline">Learn More</Button>
-            <Button variant="outline">Contact</Button>
+            <Link href={"/learn-more"}>
+              <Button variant={"outline"}>Learn More</Button>
+            </Link>
+            <Link href={"/contact-us"}>
+              <Button variant={"outline"}>Contact Us</Button>
+            </Link>
           </section>
         </main>
 
