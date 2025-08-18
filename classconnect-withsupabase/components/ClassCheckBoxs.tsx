@@ -1,15 +1,10 @@
 import { Checkbox } from "./ui/checkbox";
 import React from "react";
 
-// Define studio names as constant to ensure type safety
-const STUDIO_NAMES = [
-  "MDC",
-  "TMILLY",
-  "ML",
-  "PLAYGROUND",
-  "EIGHTYEIGHT",
-] as const;
-type StudioName = (typeof STUDIO_NAMES)[number];
+const TOP_ROW = ["MDC", "TMILLY", "ML"] as const;
+const BOTTOM_ROW = ["PLAYGROUND", "EIGHTYEIGHT", "THESIX"] as const;
+
+type StudioName = (typeof TOP_ROW | typeof BOTTOM_ROW)[number];
 
 interface ClassCheckBoxesProps {
   onVisibilityChange: (studioName: StudioName, checked: boolean) => void;
@@ -18,18 +13,13 @@ interface ClassCheckBoxesProps {
 export default function ClassCheckBoxes({
   onVisibilityChange,
 }: ClassCheckBoxesProps) {
-  return (
-    <div className="grid grid-cols-6 gap-4 mt-5">
-      {STUDIO_NAMES.map((studioName, idx) => (
-        <div
-          key={studioName}
-          className={`flex items-center space-x-2 ${
-            idx < 3 ? "col-span-2" : "col-span-3"
-          }`}
-        >
+  const renderRow = (row: readonly StudioName[]) => (
+    <div className="grid grid-cols-3 gap-4 w-full">
+      {row.map((studioName) => (
+        <div key={studioName} className="flex items-center space-x-2 w-full">
           <Checkbox
             id={studioName}
-            defaultChecked={idx < 3}
+            defaultChecked={row === TOP_ROW}
             onCheckedChange={(checked: boolean) =>
               onVisibilityChange(studioName, checked)
             }
@@ -42,6 +32,13 @@ export default function ClassCheckBoxes({
           </label>
         </div>
       ))}
+    </div>
+  );
+
+  return (
+    <div className="mt-5 space-y-4">
+      {renderRow(TOP_ROW)}
+      {renderRow(BOTTOM_ROW)}
     </div>
   );
 }

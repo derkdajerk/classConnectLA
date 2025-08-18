@@ -17,9 +17,6 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
 }) => {
   return (
     <main className="flex flex-col w-full">
-      {/* <div className="text-center p-3">
-        <p className="text-4xl font-bold">ClassConnect</p>
-      </div> */}
       <Search
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}

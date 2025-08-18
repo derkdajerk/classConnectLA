@@ -41,6 +41,7 @@ interface StudioVisibility {
   ML: boolean;
   PLAYGROUND: boolean;
   EIGHTYEIGHT: boolean;
+  THESIX: boolean;
 }
 
 const AllPageContent = ({ searchTerm }: AllPageContentProps) => {
@@ -64,6 +65,7 @@ const AllPageContent = ({ searchTerm }: AllPageContentProps) => {
   const [danceClassPLAYGROUND, setDanceClassPLAYGROUND] = useState<
     DanceClass[]
   >([]);
+  const [danceClassTHESIX, setDanceClassTHESIX] = useState<DanceClass[]>([]);
   const [timeRange, setTimeRange] = useState<TimeRange>({ start: "", end: "" });
   const [studioVisibility, setStudioVisibility] = useState<StudioVisibility>({
     MDC: true,
@@ -71,6 +73,7 @@ const AllPageContent = ({ searchTerm }: AllPageContentProps) => {
     ML: true,
     PLAYGROUND: false,
     EIGHTYEIGHT: false,
+    THESIX: false,
   });
   const [calendarOpen, setCalendarOpen] = useState<boolean>(false);
 
@@ -198,18 +201,21 @@ const AllPageContent = ({ searchTerm }: AllPageContentProps) => {
         mlClasses,
         eightyeightClasses,
         playgroundClasses,
+        thesixClasses,
       ] = await Promise.all([
         fetchStudioClassesBySearchAndTime("MDC", searchTerm, timeRange),
         fetchStudioClassesBySearchAndTime("TMILLY", searchTerm, timeRange),
         fetchStudioClassesBySearchAndTime("ML", searchTerm, timeRange),
         fetchStudioClassesBySearchAndTime("EIGHTYEIGHT", searchTerm, timeRange),
         fetchStudioClassesBySearchAndTime("PLAYGROUND", searchTerm, timeRange),
+        fetchStudioClassesBySearchAndTime("THESIX", searchTerm, timeRange),
       ]);
       setDanceClassMDC(mdcClasses);
       setDanceClassTMILLY(tmillyClasses);
       setDanceClassML(mlClasses);
       setDanceClassEIGHTYEIGHT(eightyeightClasses);
       setDanceClassPLAYGROUND(playgroundClasses);
+      setDanceClassTHESIX(thesixClasses);
     } catch (error) {
       console.error(`Error finding teacher: ${error}`);
     } finally {
@@ -227,18 +233,21 @@ const AllPageContent = ({ searchTerm }: AllPageContentProps) => {
         mlClasses,
         eightyeightClasses,
         playgroundClasses,
+        thesixClasses,
       ] = await Promise.all([
         fetchStudioClassesByDateAndTime("MDC", date, timeRange),
         fetchStudioClassesByDateAndTime("TMILLY", date, timeRange),
         fetchStudioClassesByDateAndTime("ML", date, timeRange),
         fetchStudioClassesByDateAndTime("EIGHTYEIGHT", date, timeRange),
         fetchStudioClassesByDateAndTime("PLAYGROUND", date, timeRange),
+        fetchStudioClassesByDateAndTime("THESIX", date, timeRange),
       ]);
       setDanceClassMDC(mdcClasses);
       setDanceClassTMILLY(tmillyClasses);
       setDanceClassML(mlClasses);
       setDanceClassEIGHTYEIGHT(eightyeightClasses);
       setDanceClassPLAYGROUND(playgroundClasses);
+      setDanceClassTHESIX(thesixClasses);
     } catch (error) {
       console.error(`Error fetching classes: ${error}`);
     } finally {
@@ -258,18 +267,21 @@ const AllPageContent = ({ searchTerm }: AllPageContentProps) => {
         mlClasses,
         eightyeightClasses,
         playgroundClasses,
+        thesixClasses,
       ] = await Promise.all([
         fetchStudioClassesByDateAndTime("MDC", date, timeRange),
         fetchStudioClassesByDateAndTime("TMILLY", date, timeRange),
         fetchStudioClassesByDateAndTime("ML", date, timeRange),
         fetchStudioClassesByDateAndTime("EIGHTYEIGHT", date, timeRange),
         fetchStudioClassesByDateAndTime("PLAYGROUND", date, timeRange),
+        fetchStudioClassesByDateAndTime("THESIX", date, timeRange),
       ]);
       setDanceClassMDC(mdcClasses);
       setDanceClassTMILLY(tmillyClasses);
       setDanceClassML(mlClasses);
       setDanceClassEIGHTYEIGHT(eightyeightClasses);
       setDanceClassPLAYGROUND(playgroundClasses);
+      setDanceClassTHESIX(thesixClasses);
     } catch (error) {
       console.error(`Error fetching classes: ${error}`);
     } finally {
@@ -289,18 +301,21 @@ const AllPageContent = ({ searchTerm }: AllPageContentProps) => {
         mlClasses,
         eightyeightClasses,
         playgroundClasses,
+        thesixClasses,
       ] = await Promise.all([
         fetchStudioClassesBySearchAndTime("MDC", searchTerm, timeRange),
         fetchStudioClassesBySearchAndTime("TMILLY", searchTerm, timeRange),
         fetchStudioClassesBySearchAndTime("ML", searchTerm, timeRange),
         fetchStudioClassesBySearchAndTime("EIGHTYEIGHT", searchTerm, timeRange),
         fetchStudioClassesBySearchAndTime("PLAYGROUND", searchTerm, timeRange),
+        fetchStudioClassesBySearchAndTime("THESIX", searchTerm, timeRange),
       ]);
       setDanceClassMDC(mdcClasses);
       setDanceClassTMILLY(tmillyClasses);
       setDanceClassML(mlClasses);
       setDanceClassEIGHTYEIGHT(eightyeightClasses);
       setDanceClassPLAYGROUND(playgroundClasses);
+      setDanceClassTHESIX(thesixClasses);
     } catch (error) {
       console.error(`Error finding teacher: ${error}`);
     } finally {
@@ -368,33 +383,6 @@ const AllPageContent = ({ searchTerm }: AllPageContentProps) => {
           isNextDisabled={isNextDisabled}
         />
       </Pagination>
-      {/* <Sheet open={calendarOpen} onOpenChange={setCalendarOpen}>
-        <SheetTrigger asChild>
-          <Button variant="ghost" aria-label="Open month picker">
-            <CalendarDaysIcon />
-          </Button>
-        </SheetTrigger>
-        <SheetContent
-          side="top"
-          className="h-[60vh] bg-transparent border-none"
-        >
-          <SheetHeader>
-            <SheetTitle />
-          </SheetHeader>
-          <SheetDescription className="hidden">
-            Month Day Selector
-          </SheetDescription>
-          <div className="flex justify-center items-center pt-6 pb-6 h-full">
-            <Calendar08
-              selected={dates[selectedIndex] || new Date()}
-              onSelect={handleCalendarDateSelect}
-              disabled={getDisabledDates()}
-              defaultMonth={dates[selectedIndex] || new Date()}
-              className="rounded-3xl border shadow-sm bg-background"
-            />
-          </div>
-        </SheetContent>
-      </Sheet> */}
       <div
         id="timeboxes"
         className="mt-4 w-full flex flex-col items-center justify-between gap-3"
@@ -412,6 +400,7 @@ const AllPageContent = ({ searchTerm }: AllPageContentProps) => {
         danceClassML={danceClassML}
         danceClassEIGHTYEIGHT={danceClassEIGHTYEIGHT}
         danceClassPLAYGROUND={danceClassPLAYGROUND}
+        danceClassTHESIX={danceClassTHESIX}
         studioVisibility={studioVisibility}
         searchTerm={searchTerm}
       />

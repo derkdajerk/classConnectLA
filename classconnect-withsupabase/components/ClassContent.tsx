@@ -8,6 +8,7 @@ interface StudioVisibility {
   ML: boolean;
   PLAYGROUND: boolean;
   EIGHTYEIGHT: boolean;
+  THESIX: boolean;
 }
 
 interface ClassContentProps {
@@ -16,6 +17,7 @@ interface ClassContentProps {
   danceClassML: DanceClass[];
   danceClassEIGHTYEIGHT: DanceClass[];
   danceClassPLAYGROUND: DanceClass[];
+  danceClassTHESIX: DanceClass[];
   searchTerm: string;
   studioVisibility: StudioVisibility;
 }
@@ -26,6 +28,7 @@ const ClassContent: React.FC<ClassContentProps> = ({
   danceClassML,
   danceClassEIGHTYEIGHT,
   danceClassPLAYGROUND,
+  danceClassTHESIX,
   searchTerm,
   studioVisibility,
 }) => (
@@ -62,6 +65,13 @@ const ClassContent: React.FC<ClassContentProps> = ({
       <ClassScrollBar
         studioName="EIGHTYEIGHT"
         danceClassList={danceClassEIGHTYEIGHT}
+        isSearchTerm={Boolean(searchTerm?.trim())}
+      />
+    )}
+    {studioVisibility.THESIX && (
+      <ClassScrollBar
+        studioName="THESIX"
+        danceClassList={danceClassTHESIX}
         isSearchTerm={Boolean(searchTerm?.trim())}
       />
     )}
