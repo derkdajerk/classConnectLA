@@ -18,10 +18,15 @@ export default function ContactPage() {
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
-    const { name, value, type, checked } = e.target as HTMLInputElement;
+    const target = e.target;
+    const { name, value, type } = target;
+
+    // Type guard: check if target has 'checked' property (it's an input)
+    const isCheckbox = "checked" in target && type === "checkbox";
+
     setForm((prev) => ({
       ...prev,
-      [name]: type === "checkbox" ? checked : value,
+      [name]: isCheckbox ? target.checked : value,
     }));
   };
 
