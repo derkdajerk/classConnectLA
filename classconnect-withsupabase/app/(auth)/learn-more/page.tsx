@@ -4,6 +4,7 @@
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export default function LearnMorePage() {
   return (
@@ -15,20 +16,34 @@ export default function LearnMorePage() {
         transition={{ duration: 0.6 }}
         className="text-center max-w-3xl"
       >
-        <h1 className="text-5xl font-extrabold text-purple-700 mb-4">
-          ClassConnectLA
-        </h1>
+        <Link href={"/"}>
+          <h1 className="text-5xl font-extrabold text-purple-700 mb-4">
+            ClassConnectLA
+          </h1>
+        </Link>
         <p className="text-lg text-gray-700 mb-6">
-          A dance class app built{" "}
+          <span className="font-semibold">The</span> dance class app built{" "}
           <span className="font-semibold">by dancers, for dancers</span>. Find,
           save, and plan your LA dance classes without the chaos.
         </p>
-        <Button
-          size="lg"
-          className="rounded-2xl bg-purple-600 hover:bg-purple-700"
-        >
-          Sign up free • Become an early tester
-        </Button>
+        <Link href={"/sign-up"}>
+          <Button
+            size="lg"
+            className="rounded-2xl bg-purple-600 hover:bg-purple-700"
+          >
+            Sign up free • Become an early tester
+          </Button>
+        </Link>
+        <br />
+        <Link href={"/login"}>
+          <Button
+            size="lg"
+            variant={"ghost"}
+            className="text-purple-700 text-xs hover:bg-transparent"
+          >
+            Already have an account? Login here
+          </Button>
+        </Link>
       </motion.section>
 
       {/* About / Story Section */}
@@ -36,15 +51,15 @@ export default function LearnMorePage() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.3 }}
-        className="mt-20 max-w-4xl text-center"
+        className="mt-12 max-w-4xl text-center"
       >
         <h2 className="text-3xl font-bold mb-4 text-gray-900">
           Why I built this
         </h2>
         <p className="text-gray-700 leading-relaxed">
-          I’ve been dancing in LA for years, bouncing between multiple studios,
-          scrolling through different apps and Instagram pages just to plan my
-          week. It was frustrating, so I decided to fix it.
+          After two years of bouncing between LA studios, juggling apps, and
+          scrolling through endless Instagram pages just to plan my week, I
+          realized how annoying the process was.
           <br />
           <br />
           ClassConnectLA is my way of simplifying it all. One place to discover
@@ -58,12 +73,17 @@ export default function LearnMorePage() {
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5 }}
-        className="mt-24 grid md:grid-cols-2 gap-12 max-w-5xl w-full"
+        className="mt-12 grid md:grid-cols-2 gap-12 max-w-5xl w-full"
       >
         {/* Feature 1 */}
         <div className="flex flex-col items-center text-center">
-          <div className="w-40 h-40 bg-purple-200 rounded-2xl flex items-center justify-center mb-4">
-            <span className="text-purple-600 font-bold">[Screenshot Here]</span>
+          <div className="w-200 h-200 bg-purple-200 rounded-2xl flex items-center justify-center mb-4">
+            <Image
+              src="/base screen.webp"
+              alt="ClassConnect Schedule"
+              width={200}
+              height={200}
+            />
           </div>
           <h3 className="text-xl font-semibold">All Studios in One Place</h3>
           <p className="text-gray-600 mt-2">
@@ -74,8 +94,13 @@ export default function LearnMorePage() {
 
         {/* Feature 2 */}
         <div className="flex flex-col items-center text-center">
-          <div className="w-40 h-40 bg-pink-200 rounded-2xl flex items-center justify-center mb-4">
-            <span className="text-pink-600 font-bold">[Illustration]</span>
+          <div className="w-200 h-200 bg-purple-200 rounded-2xl flex items-center justify-center mb-4">
+            <Image
+              src="/save screen.webp"
+              alt="ClassConnect Save"
+              width={200}
+              height={200}
+            />
           </div>
           <h3 className="text-xl font-semibold">Save Your Classes</h3>
           <p className="text-gray-600 mt-2">
@@ -96,8 +121,14 @@ export default function LearnMorePage() {
 
         {/* Feature 4 */}
         <div className="flex flex-col items-center text-center">
-          <div className="w-40 h-40 bg-blue-200 rounded-2xl flex items-center justify-center mb-4">
-            <span className="text-blue-600 font-bold">[Illustration]</span>
+          <div className="w-50 h-50 rounded-2xl flex items-center justify-center mb-4">
+            <Image
+              src="/high five.svg"
+              alt="ClassConnect By Dancers"
+              className="rounded-2xl"
+              width={200}
+              height={200}
+            />
           </div>
           <h3 className="text-xl font-semibold">By Dancers, For Dancers</h3>
           <p className="text-gray-600 mt-2">
@@ -112,17 +143,19 @@ export default function LearnMorePage() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.7 }}
-        className="mt-24 text-center"
+        className="mt-16 text-center"
       >
         <h2 className="text-2xl font-bold text-gray-900 mb-4">
           Ready to make your dance life easier?
         </h2>
-        <Button
-          size="lg"
-          className="rounded-2xl bg-purple-600 hover:bg-purple-700"
-        >
-          Sign up free • Early tester
-        </Button>
+        <Link href={"/sign-up"}>
+          <Button
+            size="lg"
+            className="rounded-2xl bg-purple-600 hover:bg-purple-700"
+          >
+            Sign up free • Early tester
+          </Button>
+        </Link>
         <p className="text-gray-500 mt-3">
           Be one of the first to try ClassConnectLA.
         </p>
