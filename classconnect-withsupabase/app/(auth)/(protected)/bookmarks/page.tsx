@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { removeClassFromBookmarks } from "@/lib/classfunctions";
+import Link from "next/link";
 
 interface BookmarkedClass extends DanceClass {
   bookmarked_at?: string;
@@ -282,8 +283,8 @@ export default function BookmarksPage() {
             <p className="text-muted-foreground mb-4">
               Start exploring classes and save your favorites to see them here.
             </p>
-            <Button onClick={() => (window.location.href = "/")}>
-              Browse Classes
+            <Button asChild>
+              <Link href="/">Browse Classes</Link>
             </Button>
           </CardContent>
         </Card>
@@ -479,7 +480,6 @@ export default function BookmarksPage() {
 
                     <div className="flex items-center justify-between pt-2">
                       <span className="font-semibold text-lg">
-                        $
                         {typeof danceClass.price === "number"
                           ? danceClass.price.toFixed(2)
                           : danceClass.price}
