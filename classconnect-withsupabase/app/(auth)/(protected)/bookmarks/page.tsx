@@ -35,6 +35,7 @@ import {
   SheetDescription,
 } from "@/components/ui/sheet";
 import Link from "next/link";
+import MobileLayoutSavedClasses from "@/components/MobileLayoutSavedClasses";
 
 interface BookmarkedClass extends DanceClass {
   bookmarked_at?: string;
@@ -54,6 +55,7 @@ export default function BookmarksPage() {
     new Set()
   );
   const [isSelectionMode, setIsSelectionMode] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   // Get current user
   useEffect(() => {
@@ -61,6 +63,22 @@ export default function BookmarksPage() {
     supabase.auth.getUser().then(({ data }) => {
       setUserId(data.user?.id ?? null);
     });
+  }, []);
+
+  useEffect(() => {
+    // Function to check if screen is mobile size
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    // Set initial value
+    handleResize();
+
+    // Add event listener for window resize
+    window.addEventListener("resize", handleResize);
+
+    // Clean up event listener on component unmount
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   // Fetch bookmarked classes with full class details
@@ -276,262 +294,257 @@ export default function BookmarksPage() {
     );
   }
 
-  return (
-    <main className="border-none flex flex-col w-full h-[100dvh] fixed inset-0 overflow-hidden pb-[env(safe-area-inset-bottom)] pt-[env(safe-area-inset-top)]">
-      <div className="flex items-center justify-between bg-gray-200 dark:bg-gray-950 px-4 py-3 sticky top-0 z-50">
-        <Link href={"/"} className="flex items-center">
-          <MapPin className="h-6 w-6 mr-2" />
-          <h1 className="text-xl font-bold">ClassConnectLA</h1>
-        </Link>
-      </div>
-      <div className="container mx-auto p-4 max-w-6xl">
-        <div className="">
-          <h1 className="text-3xl font-bold mb-2">My Saved Classes</h1>
-          <p className="text-muted-foreground">
-            {savedClasses.length === 0
-              ? "You haven't saved any classes yet."
-              : `You have ${savedClasses.length} saved ${
-                  savedClasses.length === 1 ? "class" : "classes"
-                }.`}
-          </p>
-        </div>
+  const pageContent = (
+    <div className="container mx-auto p-4 max-w-6xl">
+      <h1 className="text-3xl font-bold mb-2">My Saved Classes</h1>
+      <p className="text-muted-foreground pb-1">
+        {savedClasses.length === 0
+          ? "You haven't saved any classes yet."
+          : `You have ${savedClasses.length} saved ${
+              savedClasses.length === 1 ? "class" : "classes"
+            }.`}
+      </p>
 
-        {savedClasses.length === 0 ? (
-          <Card className="text-center py-12">
-            <CardContent>
-              <Heart className="mx-auto h-16 w-16 text-muted-foreground mb-4" />
-              <h3 className="text-xl font-semibold mb-2">
-                No saved classes yet
-              </h3>
-              <p className="text-muted-foreground mb-4">
-                Start exploring classes and save your favorites to see them
-                here.
-              </p>
-              <Button asChild>
-                <Link href="/">Browse Classes</Link>
-              </Button>
-            </CardContent>
-          </Card>
-        ) : (
-          <>
-            {/* Bulk Actions Header */}
-            {savedClasses.length > 1 && (
-              <div className="mb-4 flex items-center justify-between p-4 bg-muted/50 rounded-lg">
-                <div className="flex items-center gap-4">
-                  <Button
-                    variant={isSelectionMode ? "destructive" : "outline"}
-                    size="sm"
-                    onClick={toggleSelectionMode}
-                    className="gap-2"
-                  >
-                    {isSelectionMode ? (
-                      <>
-                        <Square className="h-4 w-4" />
-                        Cancel Selection
-                      </>
-                    ) : (
-                      <>
-                        <CheckSquare className="h-4 w-4" />
-                        Select Multiple
-                      </>
-                    )}
-                  </Button>
-
-                  {isSelectionMode && (
+      {savedClasses.length === 0 ? (
+        <Card className="text-center py-12">
+          <CardContent>
+            <Heart className="mx-auto h-16 w-16 text-muted-foreground mb-4" />
+            <h3 className="text-xl font-semibold mb-2">No saved classes yet</h3>
+            <p className="text-muted-foreground mb-4">
+              Start exploring classes and save your favorites to see them here.
+            </p>
+            <Button asChild>
+              <Link href="/">Browse Classes</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <>
+          {/* Bulk Actions Header */}
+          {savedClasses.length > 1 && (
+            <div className="mb-4 flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+              <div className="flex items-center gap-4">
+                <Button
+                  variant={isSelectionMode ? "destructive" : "outline"}
+                  size="sm"
+                  onClick={toggleSelectionMode}
+                  className="gap-2"
+                >
+                  {isSelectionMode ? (
                     <>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={
-                          selectedClasses.size === filteredClasses.length
-                            ? deselectAllClasses
-                            : selectAllClasses
-                        }
-                        className="gap-2"
-                      >
-                        {selectedClasses.size === filteredClasses.length
-                          ? "Deselect All"
-                          : "Select All"}
-                      </Button>
-
-                      {selectedClasses.size > 0 && (
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={handleBulkRemove}
-                          className="gap-2"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                          Remove ({selectedClasses.size})
-                        </Button>
-                      )}
+                      <Square className="h-4 w-4" />
+                      Cancel Selection
+                    </>
+                  ) : (
+                    <>
+                      <CheckSquare className="h-4 w-4" />
+                      Select Multiple
                     </>
                   )}
-                </div>
+                </Button>
 
                 {isSelectionMode && (
-                  <p className="text-sm text-muted-foreground">
-                    {selectedClasses.size} of {filteredClasses.length} selected
-                  </p>
+                  <>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={
+                        selectedClasses.size === filteredClasses.length
+                          ? deselectAllClasses
+                          : selectAllClasses
+                      }
+                      className="gap-2"
+                    >
+                      {selectedClasses.size === filteredClasses.length
+                        ? "Deselect All"
+                        : "Select All"}
+                    </Button>
+
+                    {selectedClasses.size > 0 && (
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={handleBulkRemove}
+                        className="gap-2"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        Remove ({selectedClasses.size})
+                      </Button>
+                    )}
+                  </>
                 )}
               </div>
-            )}
 
-            {/* Filters and Search */}
-            <div className="mb-6 space-y-4">
-              <div className="flex flex-col md:flex-row gap-4">
-                {/* Search */}
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Search classes, instructors, or studios..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
-                  />
-                </div>
-
-                {/* Studio Filter */}
-                <select
-                  value={selectedStudio}
-                  onChange={(e) => setSelectedStudio(e.target.value)}
-                  className="px-3 py-2 border rounded-md bg-background"
-                >
-                  <option value="all">All Studios</option>
-                  {studios.map((studio) => (
-                    <option key={studio} value={studio}>
-                      {studio}
-                    </option>
-                  ))}
-                </select>
-
-                {/* Sort */}
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-                  className="px-3 py-2 border rounded-md bg-background"
-                >
-                  <option value="date">Sort by Date</option>
-                  <option value="time">Sort by Time</option>
-                  <option value="studio">Sort by Studio</option>
-                  <option value="instructor">Sort by Instructor</option>
-                </select>
-              </div>
-
-              {/* Results summary */}
-              {filteredClasses.length !== savedClasses.length && (
+              {isSelectionMode && (
                 <p className="text-sm text-muted-foreground">
-                  Showing {filteredClasses.length} of {savedClasses.length}{" "}
-                  saved classes
+                  {selectedClasses.size} of {filteredClasses.length} selected
                 </p>
               )}
             </div>
+          )}
 
-            {/* Classes Grid */}
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {filteredClasses.map((danceClass) => {
-                const isSelected = selectedClasses.has(danceClass.class_id);
-                return (
-                  <Card
-                    key={danceClass.class_id}
-                    className={`relative hover:shadow-md transition-all cursor-pointer ${
-                      isSelectionMode
-                        ? isSelected
-                          ? "ring-2 ring-primary bg-primary/5"
-                          : "hover:ring-1 hover:ring-muted-foreground/20"
-                        : ""
-                    }`}
-                    onClick={
-                      isSelectionMode
-                        ? () => toggleClassSelection(danceClass.class_id)
-                        : undefined
-                    }
-                  >
-                    <CardHeader className="pb-3">
-                      <div className="flex justify-between items-start">
-                        <div className="flex items-center gap-2">
-                          {isSelectionMode && (
-                            <div className="flex items-center">
-                              {isSelected ? (
-                                <CheckSquare className="h-5 w-5 text-primary" />
-                              ) : (
-                                <Square className="h-5 w-5 text-muted-foreground" />
-                              )}
-                            </div>
-                          )}
-                          <Badge variant="secondary" className="mb-2">
-                            {danceClass.studio_name}
-                          </Badge>
-                        </div>
-                        {!isSelectionMode && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleRemoveBookmark(
-                                danceClass.class_id,
-                                danceClass.classname
-                              );
-                            }}
-                            className="h-8 w-8 p-0 text-rose-600 hover:text-rose-700 hover:bg-rose-50"
-                          >
-                            <HeartOff className="h-4 w-4" />
-                          </Button>
-                        )}
-                      </div>
-                      <CardTitle className="text-lg leading-tight">
-                        {danceClass.classname}
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="pt-0 space-y-3">
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <User className="h-4 w-4" />
-                        <span>{danceClass.instructor}</span>
-                      </div>
+          {/* Filters and Search */}
+          <div className="mb-6 space-y-4">
+            <div className="flex flex-col md:flex-row gap-4">
+              {/* Search */}
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search classes, instructors, or studios..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
 
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Calendar className="h-4 w-4" />
-                        <span>{formatDate(danceClass.date)}</span>
-                      </div>
+              {/* Studio Filter */}
+              <select
+                value={selectedStudio}
+                onChange={(e) => setSelectedStudio(e.target.value)}
+                className="px-3 py-2 border rounded-md bg-background"
+              >
+                <option value="all">All Studios</option>
+                {studios.map((studio) => (
+                  <option key={studio} value={studio}>
+                    {studio}
+                  </option>
+                ))}
+              </select>
 
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Clock className="h-4 w-4" />
-                        <span>
-                          {formatTime(danceClass.time)} • {danceClass.length}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center justify-between pt-2">
-                        <span className="font-semibold text-lg">
-                          {typeof danceClass.price === "number"
-                            ? danceClass.price.toFixed(2)
-                            : danceClass.price}
-                        </span>
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
+              {/* Sort */}
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+                className="px-3 py-2 border rounded-md bg-background"
+              >
+                <option value="date">Sort by Date</option>
+                <option value="time">Sort by Time</option>
+                <option value="studio">Sort by Studio</option>
+                <option value="instructor">Sort by Instructor</option>
+              </select>
             </div>
 
-            {/* No results state */}
-            {filteredClasses.length === 0 && savedClasses.length > 0 && (
-              <Card className="text-center py-8">
-                <CardContent>
-                  <Search className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">
-                    No classes found
-                  </h3>
-                  <p className="text-muted-foreground">
-                    Try adjusting your search or filters to find classes.
-                  </p>
-                </CardContent>
-              </Card>
+            {/* Results summary */}
+            {filteredClasses.length !== savedClasses.length && (
+              <p className="text-sm text-muted-foreground">
+                Showing {filteredClasses.length} of {savedClasses.length} saved
+                classes
+              </p>
             )}
-          </>
-        )}
-      </div>
-    </main>
+          </div>
+
+          {/* Classes Grid */}
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {filteredClasses.map((danceClass) => {
+              const isSelected = selectedClasses.has(danceClass.class_id);
+              return (
+                <Card
+                  key={danceClass.class_id}
+                  className={`relative hover:shadow-md transition-all cursor-pointer ${
+                    isSelectionMode
+                      ? isSelected
+                        ? "ring-2 ring-primary bg-primary/5"
+                        : "hover:ring-1 hover:ring-muted-foreground/20"
+                      : ""
+                  }`}
+                  onClick={
+                    isSelectionMode
+                      ? () => toggleClassSelection(danceClass.class_id)
+                      : undefined
+                  }
+                >
+                  <CardHeader className="pb-3">
+                    <div className="flex justify-between items-start">
+                      <div className="flex items-center gap-2">
+                        {isSelectionMode && (
+                          <div className="flex items-center">
+                            {isSelected ? (
+                              <CheckSquare className="h-5 w-5 text-primary" />
+                            ) : (
+                              <Square className="h-5 w-5 text-muted-foreground" />
+                            )}
+                          </div>
+                        )}
+                        <Badge variant="secondary" className="mb-2">
+                          {danceClass.studio_name}
+                        </Badge>
+                      </div>
+                      {!isSelectionMode && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleRemoveBookmark(
+                              danceClass.class_id,
+                              danceClass.classname
+                            );
+                          }}
+                          className="h-8 w-8 p-0 text-rose-600 hover:text-rose-700 hover:bg-rose-50"
+                        >
+                          <HeartOff className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                    <CardTitle className="text-lg leading-tight">
+                      {danceClass.classname}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-0 space-y-3">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <User className="h-4 w-4" />
+                      <span>{danceClass.instructor}</span>
+                    </div>
+
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Calendar className="h-4 w-4" />
+                      <span>{formatDate(danceClass.date)}</span>
+                    </div>
+
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Clock className="h-4 w-4" />
+                      <span>
+                        {formatTime(danceClass.time)} • {danceClass.length}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-2">
+                      <span className="font-semibold text-lg">
+                        {typeof danceClass.price === "number"
+                          ? danceClass.price.toFixed(2)
+                          : danceClass.price}
+                      </span>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+
+          {/* No results state */}
+          {filteredClasses.length === 0 && savedClasses.length > 0 && (
+            <Card className="text-center py-8">
+              <CardContent>
+                <Search className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                <h3 className="text-lg font-semibold mb-2">No classes found</h3>
+                <p className="text-muted-foreground">
+                  Try adjusting your search or filters to find classes.
+                </p>
+              </CardContent>
+            </Card>
+          )}
+        </>
+      )}
+    </div>
+  );
+
+  return (
+    <>
+      {isMobile ? (
+        <MobileLayoutSavedClasses>{pageContent}</MobileLayoutSavedClasses>
+      ) : (
+        pageContent
+      )}
+    </>
   );
 }
