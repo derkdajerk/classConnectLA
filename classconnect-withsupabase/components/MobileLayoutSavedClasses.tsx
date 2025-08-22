@@ -32,9 +32,7 @@ const MobileLayoutSavedClasses = ({
           <MapPin className="h-6 w-6 mr-2" />
           <h1 className="text-xl font-bold">ClassConnectLA</h1>
         </Link>
-        <div className="flex gap-2">
-          <Button>test</Button>
-        </div>
+        <div className="flex gap-2"></div>
       </div>
 
       {/* Content Area - Scrollable */}

@@ -1,4 +1,4 @@
-import { Calendar, Home, Bookmark, User, MoreHorizontal } from "lucide-react";
+import { Calendar, Home, Bookmark, User, CalendarDays } from "lucide-react";
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -26,7 +26,7 @@ const BottomNavBarMobile = () => {
         }`}
       >
         <Calendar className="h-5 w-5" />
-        <span className="text-xs mt-1">Schedule</span>
+        <span className="text-xs mt-1">Schedules</span>
       </Link>
       <Link
         href="/bookmarks"
@@ -37,13 +37,18 @@ const BottomNavBarMobile = () => {
         <Bookmark className="h-5 w-5" />
         <span className="text-xs mt-1">Saved</span>
       </Link>
+      <Link
+        href="/user-calendar"
+        className={`flex flex-col items-center justify-center p-2 ${
+          isActive("/user-calendar") ? "text-primary" : ""
+        }`}
+      >
+        <CalendarDays className="h-5 w-5" />
+        <span className="text-xs mt-1">Calendar</span>
+      </Link>
       <button className="flex flex-col items-center justify-center p-2">
         <User className="h-5 w-5" />
         <span className="text-xs mt-1">Profile</span>
-      </button>
-      <button className="flex flex-col items-center justify-center p-2">
-        <MoreHorizontal className="h-5 w-5" />
-        <span className="text-xs mt-1">More</span>
       </button>
     </div>
   );

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Button } from "./ui/button";
 import { createClient } from "@/lib/supabase/server";
 import { LogoutButton } from "./logout-button";
-import { HomeIcon, Bookmark, Calendar } from "lucide-react";
+import { HomeIcon, Bookmark, Calendar, CalendarDays } from "lucide-react";
 
 export async function AuthButton() {
   const supabase = await createClient();
@@ -26,13 +26,17 @@ export async function AuthButton() {
       </span>
 
       {/* Button row - shown below greeting on mobile, inline on desktop */}
-      <div className="flex gap-3 items-center w-full md:w-auto justify-center md:justify-start md:mt-0">
-        <LogoutButton />
-
+      <div className="flex flex-row gap-3 items-center w-full md:w-auto justify-center md:justify-start md:mt-0">
+        <Link href="/">
+          <Button iconSize="md" className="md:flex">
+            <HomeIcon className="h-4 w-4" />
+            <span className="md:inline hidden">Home</span>
+          </Button>
+        </Link>
         <Link href={"/schedule"}>
           <Button iconSize="md" className="md:flex">
             <Calendar className="h-5 w-5" />
-            <span className="md:inline hidden flex-col">Schedule</span>
+            <span className="md:inline hidden flex-col">Schedules</span>
           </Button>
         </Link>
         <Link href={"/bookmarks"}>
@@ -41,12 +45,13 @@ export async function AuthButton() {
             <span className="md:inline hidden">Saved Classes</span>
           </Button>
         </Link>
-        <Link href="/">
+        <Link href={"/user-calendar"}>
           <Button iconSize="md" className="md:flex">
-            <HomeIcon className="h-4 w-4" />
-            <span className="md:inline hidden">Home</span>
+            <CalendarDays className="h-4 w-4" />
+            <span className="md:inline hidden">Calendar</span>
           </Button>
         </Link>
+        <LogoutButton />
       </div>
     </div>
   ) : (
