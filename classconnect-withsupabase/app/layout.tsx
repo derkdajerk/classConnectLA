@@ -12,7 +12,7 @@ const defaultUrl = process.env.VERCEL_URL
 export const metadata: Metadata = {
   metadataBase: new URL(defaultUrl),
   title: "ClassConnectLA",
-  description: "All your dance classes, all in one place.",
+  description: "All your dance classes, all in one place. ClassConnectLA",
 };
 
 export default function RootLayout({

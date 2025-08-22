@@ -55,7 +55,7 @@ export default function Home() {
             <a href="mailto:derek@derektrauner.com" className="">
               derek@derektrauner.com
             </a>
-            <br />© 2025 Derk Inc. All rights reserved.
+            <br />© 2025 Traunico, LLC. All rights reserved.
           </p>
           <ThemeSwitcher />
         </footer>

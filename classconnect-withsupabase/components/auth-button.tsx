@@ -31,7 +31,7 @@ export async function AuthButton() {
         <Link href={"/bookmarks"}>
           <Button variant={"default"}>
             <Bookmark className="h-4 w-4" />
-            <span className="md:inline hidden">Bookmarks</span>
+            <span className="md:inline hidden">Saved Classes</span>
           </Button>
         </Link>
         <Link href={"/schedule"}>
