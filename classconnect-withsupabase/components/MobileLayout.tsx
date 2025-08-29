@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   Sheet,
   SheetContent,
@@ -72,6 +72,12 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
   const [currentWeekStartDate, setCurrentWeekStartDate] = useState<Date>(
     new Date()
   );
+  const [currentWeekEndDate, setCurrentWeekEndDate] = useState<Date>(() => {
+    const today = new Date();
+    const endOfWeek = new Date(today);
+    endOfWeek.setDate(today.getDate() + 6);
+    return endOfWeek;
+  });
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [progress, setProgress] = useState<number>(0);
   const [danceClasses, setDanceClasses] = useState<
@@ -107,6 +113,25 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
     return newWeekDates;
   };
 
+  // Navigation limit functions (same logic as desktop version)
+  const isPreviousDisabled = useCallback((): boolean => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const weekStartDate = new Date(currentWeekStartDate);
+    weekStartDate.setHours(0, 0, 0, 0);
+
+    return weekStartDate.getTime() <= today.getTime();
+  }, [currentWeekStartDate]);
+
+  const isNextDisabled = useCallback((): boolean => {
+    const today = new Date();
+    const threeWeeksFromToday = new Date(today);
+    threeWeeksFromToday.setDate(today.getDate() + 14); // 2 weeks forward from today (3 weeks total)
+
+    return currentWeekEndDate.getTime() >= threeWeeksFromToday.getTime();
+  }, [currentWeekEndDate]);
+
   // Initialize dates for the current week, starting from today
   useEffect(() => {
     const today = new Date();
@@ -115,6 +140,11 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
 
     // Set current week start date to today
     setCurrentWeekStartDate(today);
+
+    // Set current week end date to today + 6
+    const endOfWeek = new Date(today);
+    endOfWeek.setDate(today.getDate() + 6);
+    setCurrentWeekEndDate(endOfWeek);
 
     // Generate dates for the current week
     const weekDates = Array.from({ length: 7 }, (_, i) => {
@@ -201,7 +231,11 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
   const goToPreviousWeek = () => {
     const prevWeekStart = new Date(currentWeekStartDate);
     prevWeekStart.setDate(prevWeekStart.getDate() - 7);
+    const prevWeekEnd = new Date(currentWeekEndDate);
+    prevWeekEnd.setDate(currentWeekEndDate.getDate() - 7);
+
     setCurrentWeekStartDate(prevWeekStart);
+    setCurrentWeekEndDate(prevWeekEnd);
     setDates(generateWeekDates(prevWeekStart));
   };
 
@@ -209,7 +243,11 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
   const goToNextWeek = () => {
     const nextWeekStart = new Date(currentWeekStartDate);
     nextWeekStart.setDate(nextWeekStart.getDate() + 7);
+    const nextWeekEnd = new Date(currentWeekEndDate);
+    nextWeekEnd.setDate(currentWeekEndDate.getDate() + 7);
+
     setCurrentWeekStartDate(nextWeekStart);
+    setCurrentWeekEndDate(nextWeekEnd);
     setDates(generateWeekDates(nextWeekStart));
   };
 
@@ -229,17 +267,28 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
     const weekStart = new Date(date);
     weekStart.setDate(date.getDate() - date.getDay()); // Start of week (Sunday)
     setCurrentWeekStartDate(weekStart);
+
+    // Set current week end date
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekStart.getDate() + 6);
+    setCurrentWeekEndDate(weekEnd);
+
     setDates(generateWeekDates(weekStart));
 
     // Close the calendar sheet
     setCalendarOpen(false);
   };
 
-  // Get disabled dates for calendar (disable all days before today)
+  // Get disabled dates for calendar (disable all days before today and after 2 weeks forward)
   const getDisabledDates = () => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    return { before: today };
+    const threeWeeksFromToday = new Date(today);
+    threeWeeksFromToday.setDate(today.getDate() + 14); // 2 weeks forward from today
+    return {
+      before: today,
+      after: threeWeeksFromToday,
+    };
   };
 
   // Smooth drag handlers for date strip
@@ -292,26 +341,34 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
 
     isDraggingRef.current = false;
 
-    // Decide action based on drag distance
-    if (finalDelta <= -threshold) {
-      // Slide left to next week (to the third page)
+    // Decide action based on drag distance and navigation limits
+    if (finalDelta <= -threshold && !isNextDisabled()) {
+      // Slide left to next week (to the third page) - only if not disabled
       animateToAndThenReset(baseTranslateXRef.current - pageWidth, () => {
         // Update week to next and recenter to middle page without animation
         const nextWeekStart = new Date(currentWeekStartDate);
         nextWeekStart.setDate(nextWeekStart.getDate() + 7);
+        const nextWeekEnd = new Date(currentWeekEndDate);
+        nextWeekEnd.setDate(currentWeekEndDate.getDate() + 7);
+
         setCurrentWeekStartDate(nextWeekStart);
+        setCurrentWeekEndDate(nextWeekEnd);
         setDates(generateWeekDates(nextWeekStart));
         // Keep the selected day aligned by advancing it a week
         const nextSelected = new Date(selectedDate);
         nextSelected.setDate(nextSelected.getDate() + 7);
         setSelectedDate(nextSelected);
       });
-    } else if (finalDelta >= threshold) {
-      // Slide right to previous week (to the first page)
+    } else if (finalDelta >= threshold && !isPreviousDisabled()) {
+      // Slide right to previous week (to the first page) - only if not disabled
       animateToAndThenReset(baseTranslateXRef.current + pageWidth, () => {
         const prevWeekStart = new Date(currentWeekStartDate);
         prevWeekStart.setDate(prevWeekStart.getDate() - 7);
+        const prevWeekEnd = new Date(currentWeekEndDate);
+        prevWeekEnd.setDate(currentWeekEndDate.getDate() - 7);
+
         setCurrentWeekStartDate(prevWeekStart);
+        setCurrentWeekEndDate(prevWeekEnd);
         setDates(generateWeekDates(prevWeekStart));
         // Keep the selected day aligned by moving it back a week
         const prevSelected = new Date(selectedDate);
@@ -319,7 +376,7 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
         setSelectedDate(prevSelected);
       });
     } else {
-      // Not enough drag, snap back smoothly to middle page
+      // Not enough drag or navigation disabled, snap back smoothly to middle page
       animateToAndThenReset(baseTranslateXRef.current);
     }
   };

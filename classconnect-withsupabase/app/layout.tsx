@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { ThemeProvider } from "next-themes";
 import { Analytics } from "@vercel/analytics/next";
 import { Toaster } from "@/components/ui/sonner";
+import QueryProvider from "@/components/QueryProvider";
 import "./globals.css";
 import "./styles.css";
 
@@ -29,21 +30,23 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-screen flex flex-col overflow-x-hidden w-full">
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="light"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <div className="flex flex-col min-h-screen w-full">{children}</div>
-          <Toaster
-            richColors
-            expand={false}
-            closeButton={true}
-            position="bottom-center"
-            duration={3000}
-          />
-        </ThemeProvider>
+        <QueryProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="light"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <div className="flex flex-col min-h-screen w-full">{children}</div>
+            <Toaster
+              richColors
+              expand={false}
+              closeButton={true}
+              position="top-left"
+              duration={3000}
+            />
+          </ThemeProvider>
+        </QueryProvider>
         <Analytics />
       </body>
     </html>

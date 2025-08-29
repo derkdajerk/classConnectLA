@@ -314,7 +314,7 @@ export default function BookmarksPage() {
               Start exploring classes and save your favorites to see them here.
             </p>
             <Button asChild>
-              <Link href="/">Browse Classes</Link>
+              <Link href="/schedule">Browse Classes</Link>
             </Button>
           </CardContent>
         </Card>
