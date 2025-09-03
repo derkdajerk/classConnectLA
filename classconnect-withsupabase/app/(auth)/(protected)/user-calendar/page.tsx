@@ -258,12 +258,12 @@ export default function UserCalendar() {
   // Mobile View using Calendar31Mobile
   if (isMobile) {
     return (
-      <main className="flex flex-col w-full h-[100dvh] fixed inset-0 overflow-hidden pb-[env(safe-area-inset-bottom)] pt-[env(safe-area-inset-top)]">
+      <main className="flex flex-col w-full min-h-screen bg-background">
         {/* Header */}
         <div className="flex flex-col items-center justify-between bg-gray-200 dark:bg-gray-950 px-4 py-3 sticky top-0 z-50">
           <Link href={"/"} className="flex items-center">
             <MapPin className="h-6 w-6 mr-2" />
-            <h1 className="text-xl font-bold">My Calendar</h1>
+            <h1 className="text-xl font-bold">ClassConnectLA</h1>
           </Link>
           <div className="flex gap-2">
             <div className="text-sm text-muted-foreground">
@@ -274,7 +274,7 @@ export default function UserCalendar() {
 
         {/* Loading Overlay */}
         {isLoading && (
-          <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50">
             <div className="text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
               <p className="text-muted-foreground">Loading your calendar...</p>
@@ -282,8 +282,8 @@ export default function UserCalendar() {
           </div>
         )}
 
-        {/* Calendar Content - Full Screen */}
-        <div className="flex-1 overflow-y-auto p-4">
+        {/* Calendar Content */}
+        <div className="flex-1 p-4 pb-20">
           <Calendar31Mobile
             selectedDate={selectedDate}
             onDateSelect={(date) => date && setSelectedDate(date)}
