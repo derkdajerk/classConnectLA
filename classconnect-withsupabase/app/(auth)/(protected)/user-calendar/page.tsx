@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useMonthEvents, getEndTime } from "@/hooks/useMonthEvents";
 import { useQueryClient } from "@tanstack/react-query";
+import { DanceClass } from "@/types/danceClass";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -15,12 +16,21 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
   Calendar,
   Clock,
   User,
   Trash2,
   ChevronLeft,
   ChevronRight,
+  Share2,
 } from "lucide-react";
 import { toast } from "sonner";
 import Calendar31Mobile from "@/components/calendar-31-mobile";
@@ -36,6 +46,13 @@ export default function UserCalendar() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [viewType, setViewType] = useState<ViewType>("month");
   const [isMobile, setIsMobile] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedClass, setSelectedClass] = useState<DanceClass | null>(null);
+  const [isDayPopoverOpen, setIsDayPopoverOpen] = useState(false);
+  const [selectedDayEvents, setSelectedDayEvents] = useState<DanceClass[]>([]);
+  const [selectedPopoverDate, setSelectedPopoverDate] = useState<Date | null>(
+    null
+  );
   const queryClient = useQueryClient();
 
   // Get current user
@@ -105,6 +122,79 @@ export default function UserCalendar() {
       console.error("Failed to remove from schedule:", error);
       toast.error("Failed to remove from calendar");
     }
+  };
+
+  // Modal functions
+  const openClassModal = (classEvent: DanceClass) => {
+    setSelectedClass(classEvent);
+    setIsModalOpen(true);
+  };
+
+  const closeClassModal = () => {
+    setIsModalOpen(false);
+    setSelectedClass(null);
+  };
+
+  // Day popover functions
+  const openDayPopover = (date: Date, events: DanceClass[]) => {
+    setSelectedPopoverDate(date);
+    setSelectedDayEvents(events);
+    setIsDayPopoverOpen(true);
+  };
+
+  const closeDayPopover = () => {
+    setIsDayPopoverOpen(false);
+    setSelectedDayEvents([]);
+    setSelectedPopoverDate(null);
+  };
+
+  const formatPopoverDate = (
+    date: Date
+  ): { dayOfWeek: string; dayNumber: string } => {
+    const dayOfWeek = date
+      .toLocaleDateString("en-US", { weekday: "short" })
+      .toUpperCase();
+    const dayNumber = date.getDate().toString();
+    return { dayOfWeek, dayNumber };
+  };
+
+  const handleShare = () => {
+    if (!selectedClass) return;
+
+    const shareText = `${selectedClass.classname} with ${
+      selectedClass.instructor
+    } at ${selectedClass.studio_name} on ${formatDate(
+      selectedClass.date
+    )} at ${formatTime(selectedClass.time)}`;
+
+    if (navigator.share) {
+      navigator
+        .share({
+          title: `Dance Class: ${selectedClass.classname}`,
+          text: shareText,
+        })
+        .catch(console.error);
+    } else {
+      navigator.clipboard
+        .writeText(shareText)
+        .then(() => {
+          toast.success("Class details copied to clipboard!");
+        })
+        .catch(() => {
+          toast.error("Failed to copy to clipboard");
+        });
+    }
+  };
+
+  const formatDate = (dateString: string): string => {
+    const date = new Date(dateString + "T00:00:00");
+    date.setMinutes(date.getMinutes() + date.getTimezoneOffset());
+    return date.toLocaleDateString("en-US", {
+      weekday: "long",
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    });
   };
 
   // Navigation functions
@@ -223,13 +313,15 @@ export default function UserCalendar() {
     const days = [];
     const currentGridDate = new Date(firstDayOfGrid);
 
-    for (let i = 0; i < 42; i++) {
-      // 6 weeks * 7 days
+    for (let i = 0; i < 35; i++) {
+      // 5 weeks * 7 days
       const dayEvents = getEventsForDate(currentGridDate);
       const isCurrentMonth =
         currentGridDate.getMonth() === currentDate.getMonth();
       const isToday =
         currentGridDate.toDateString() === new Date().toDateString();
+      const isBottomLeft = i === 28; // Bottom-left corner (last row, first column)
+      const isBottomRight = i === 34; // Bottom-right corner (last row, last column)
 
       days.push(
         <div
@@ -238,7 +330,13 @@ export default function UserCalendar() {
             !isCurrentMonth
               ? "bg-muted/20 text-muted-foreground"
               : "bg-background"
-          } ${isToday ? "bg-primary/5 border-primary" : ""}`}
+          } ${isToday ? "bg-primary/5 border-primary" : ""} ${
+            isBottomLeft
+              ? "rounded-bl-3xl"
+              : isBottomRight
+              ? "rounded-br-3xl"
+              : ""
+          }`}
         >
           <div
             className={`text-sm font-medium mb-1 ${
@@ -251,16 +349,29 @@ export default function UserCalendar() {
             {dayEvents.slice(0, 3).map((event) => (
               <div
                 key={event.class_id}
-                className="text-xs p-1 bg-primary/10 text-primary rounded truncate"
-                title={`${event.classname} - ${formatTime(event.time)}`}
+                className="text-xs p-1 bg-primary/10 text-primary rounded cursor-pointer hover:bg-primary/20 transition-colors"
+                title={`${event.classname} - ${formatTime(event.time)} - ${
+                  event.instructor
+                }`}
+                onClick={() => openClassModal(event)}
               >
-                {formatTime(event.time)} {event.classname}
+                <div className="font-medium truncate">
+                  {formatTime(event.time)} • {event.classname}
+                </div>
+                <div className="text-primary/70 truncate">
+                  {event.instructor} • {event.studio_name}
+                </div>
               </div>
             ))}
             {dayEvents.length > 3 && (
-              <div className="text-xs text-muted-foreground">
+              <button
+                className="text-xs text-muted-foreground hover:text-foreground hover:shadow-sm transition-all duration-150 rounded px-1 py-0.5 hover:bg-muted/50"
+                onClick={() =>
+                  openDayPopover(new Date(currentGridDate), dayEvents)
+                }
+              >
                 +{dayEvents.length - 3} more
-              </div>
+              </button>
             )}
           </div>
         </div>
@@ -269,12 +380,18 @@ export default function UserCalendar() {
     }
 
     return (
-      <div className="grid grid-cols-7 gap-0 border">
+      <div className="grid grid-cols-7 gap-0 rounded-3xl">
         {/* Day headers */}
-        {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
+        {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day, index) => (
           <div
             key={day}
-            className="p-3 text-center font-medium bg-muted border-b"
+            className={`p-2 text-center font-medium bg-muted border-b ${
+              index === 0
+                ? "rounded-tl-3xl"
+                : index === 6
+                ? "rounded-tr-3xl"
+                : ""
+            }`}
           >
             {day}
           </div>
@@ -307,15 +424,39 @@ export default function UserCalendar() {
             </div>
             <div className="space-y-1 min-h-[200px]">
               {dayEvents.map((event) => (
-                <Card key={event.class_id} className="p-2">
-                  <div className="text-xs font-medium truncate">
-                    {event.classname}
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    {event.studio_name}
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    {formatTime(event.time)}
+                <Card
+                  key={event.class_id}
+                  className="p-3 cursor-pointer hover:shadow-md transition-all"
+                  onClick={() => openClassModal(event)}
+                >
+                  <div className="space-y-2">
+                    <Badge variant="secondary" className="text-xs">
+                      {event.studio_name}
+                    </Badge>
+                    <div className="text-sm font-medium">{event.classname}</div>
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <User className="h-3 w-3" />
+                      <span className="truncate">{event.instructor}</span>
+                    </div>
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <Clock className="h-3 w-3" />
+                      <span>
+                        {formatTime(event.time)} -{" "}
+                        {formatTime(
+                          getEndTime(event.time, event.length || "60 min")
+                        )}
+                      </span>
+                    </div>
+                    {event.length && (
+                      <div className="text-xs text-muted-foreground">
+                        Duration: {event.length}
+                      </div>
+                    )}
+                    {event.price && (
+                      <div className="text-sm font-semibold text-primary">
+                        {event.price}
+                      </div>
+                    )}
                   </div>
                 </Card>
               ))}
@@ -408,6 +549,140 @@ export default function UserCalendar() {
           </div>
         )}
       </div>
+    );
+  };
+
+  // Render class details modal
+  const renderClassModal = () => {
+    if (!selectedClass) return null;
+
+    return (
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold">
+              {selectedClass.classname}
+            </DialogTitle>
+            <DialogDescription>Class Details</DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div>
+              <Badge variant="secondary" className="mb-3">
+                {selectedClass.studio_name}
+              </Badge>
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <User className="h-4 w-4 text-muted-foreground" />
+                <span className="font-medium">Instructor:</span>
+                <span>{selectedClass.instructor}</span>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <Calendar className="h-4 w-4 text-muted-foreground" />
+                <span className="font-medium">Date:</span>
+                <span>{formatDate(selectedClass.date)}</span>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <Clock className="h-4 w-4 text-muted-foreground" />
+                <span className="font-medium">Time:</span>
+                <span>
+                  {formatTime(selectedClass.time)} -{" "}
+                  {formatTime(
+                    getEndTime(
+                      selectedClass.time,
+                      selectedClass.length || "60 min"
+                    )
+                  )}
+                </span>
+              </div>
+
+              {selectedClass.length && (
+                <div className="flex items-center gap-3">
+                  <Clock className="h-4 w-4 text-muted-foreground" />
+                  <span className="font-medium">Duration:</span>
+                  <span>{selectedClass.length}</span>
+                </div>
+              )}
+
+              {selectedClass.price && (
+                <div className="flex items-center gap-3">
+                  <span className="font-medium">Price:</span>
+                  <span className="text-xl font-semibold text-primary">
+                    {selectedClass.price}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <DialogFooter className="flex gap-2">
+            <Button variant="outline" onClick={handleShare} className="gap-2">
+              <Share2 className="h-4 w-4" />
+              Share
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                removeFromSchedule(
+                  selectedClass.class_id,
+                  selectedClass.classname
+                );
+                closeClassModal();
+              }}
+              className="gap-2"
+            >
+              <Trash2 className="h-4 w-4" />
+              Remove from Calendar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    );
+  };
+
+  // Render day popover
+  const renderDayPopover = () => {
+    if (!selectedPopoverDate || selectedDayEvents.length === 0) return null;
+
+    return (
+      <Dialog open={isDayPopoverOpen} onOpenChange={setIsDayPopoverOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <div className="flex flex-col items-center text-center">
+              <DialogTitle className="text-sm font-medium text-muted-foreground">
+                {formatPopoverDate(selectedPopoverDate).dayOfWeek}
+              </DialogTitle>
+              <div className="text-2xl font-bold">
+                {formatPopoverDate(selectedPopoverDate).dayNumber}
+              </div>
+            </div>
+          </DialogHeader>
+
+          <div className="space-y-2 max-h-96 overflow-y-auto">
+            {selectedDayEvents.map((event) => (
+              <div
+                key={event.class_id}
+                className="text-xs p-2 bg-primary/10 text-primary rounded cursor-pointer hover:bg-primary/20 transition-colors"
+                onClick={() => {
+                  openClassModal(event);
+                  closeDayPopover();
+                }}
+              >
+                <div className="font-medium truncate">
+                  {formatTime(event.time)} • {event.classname}
+                </div>
+                <div className="text-primary/70 truncate">
+                  {event.instructor} • {event.studio_name}
+                </div>
+              </div>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
     );
   };
 
@@ -513,6 +788,12 @@ export default function UserCalendar() {
           {viewType === "day" && renderDayView()}
         </>
       )}
+
+      {/* Class Details Modal */}
+      {!isMobile && renderClassModal()}
+
+      {/* Day Events Popover */}
+      {!isMobile && renderDayPopover()}
     </div>
   );
 }
