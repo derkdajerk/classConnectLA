@@ -109,8 +109,13 @@ export default function LearnMorePage() {
 
         {/* Feature 3 */}
         <div className="flex flex-col items-center text-center">
-          <div className="w-40 h-40 bg-yellow-200 rounded-2xl flex items-center justify-center mb-4">
-            <span className="text-yellow-600 font-bold">[Screenshot Here]</span>
+          <div className="w-200 h-200 bg-yellow-200 rounded-2xl flex items-center justify-center mb-4">
+            <Image
+              src="/Calendar screen.webp"
+              alt="ClassConnect Calendar"
+              width={200}
+              height={200}
+            />
           </div>
           <h3 className="text-xl font-semibold">Stay in Sync</h3>
           <p className="text-gray-600 mt-2">
@@ -120,7 +125,7 @@ export default function LearnMorePage() {
 
         {/* Feature 4 */}
         <div className="flex flex-col items-center text-center">
-          <div className="w-50 h-50 rounded-2xl flex items-center justify-center mb-4">
+          <div className="w-200 h-200 rounded-2xl flex items-center justify-center mb-4">
             <Image
               src="/high five.svg"
               alt="ClassConnect By Dancers"
