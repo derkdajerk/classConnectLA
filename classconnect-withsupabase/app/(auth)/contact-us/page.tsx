@@ -58,10 +58,22 @@ export default function ContactForm() {
 
   return (
     <>
-      <div className="align-top font-semibold text-2xl md:block bg-transparent">
-        <Link href={"/"}>ClassConnectLA</Link>
-      </div>
       <main className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-purple-100 via-white to-pink-100 px-6 py-12">
+        <div className="absolute top-4 left-4 z-10">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 font-semibold text-2xl text-gray-800 hover:text-purple-600 transition-all duration-200 bg-white/20 backdrop-blur-sm rounded-lg px-3 py-2 hover:bg-white/30"
+          >
+            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+              <path
+                fillRule="evenodd"
+                d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
+                clipRule="evenodd"
+              />
+            </svg>
+            ClassConnectLA
+          </Link>
+        </div>
         <div className="max-w-2xl w-full bg-white rounded-2xl shadow-md p-8">
           <h1 className="text-4xl font-bold text-purple-700 mb-6 text-center">
             Contact Us

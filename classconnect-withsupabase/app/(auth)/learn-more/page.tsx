@@ -8,6 +8,21 @@ import Link from "next/link";
 export default function LearnMorePage() {
   return (
     <main className="min-h-screen w-full bg-gradient-to-b from-pink-100 via-white to-purple-100 flex flex-col items-center px-6 py-12">
+      <div className="absolute top-4 left-4 z-10">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 font-semibold text-xl text-gray-800 hover:text-purple-600 transition-all duration-200 bg-white/20 backdrop-blur-sm rounded-lg px-3 py-2 hover:bg-white/30"
+        >
+          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+            <path
+              fillRule="evenodd"
+              d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
+              clipRule="evenodd"
+            />
+          </svg>
+          ClassConnectLA
+        </Link>
+      </div>
       {/* Hero Section */}
       <motion.section
         initial={{ opacity: 0, y: 30 }}
