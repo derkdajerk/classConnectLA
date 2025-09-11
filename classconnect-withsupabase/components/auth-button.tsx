@@ -9,14 +9,13 @@ export async function AuthButton() {
 
   // You can also use getUser() which will be slower.
   const { data } = await supabase.auth.getUser();
-
   const user = data?.user;
   const displayName = user?.user_metadata.display_name || user?.email;
 
   return user ? (
     <div className="flex flex-col w-full md:flex-row md:items-center gap-2 text-sm">
       {/* Desktop greeting */}
-      <span className="whitespace-nowrap md:inline hidden">
+      <span className="whitespace-nowrap md:inline hidden text-md">
         Hey, {displayName}!
       </span>
 

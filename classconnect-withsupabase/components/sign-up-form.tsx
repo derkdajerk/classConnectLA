@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import { cn } from "@/lib/utils";
@@ -15,12 +16,16 @@ import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import "react-phone-number-input/style.css";
+import PhoneInput, { isValidPhoneNumber } from "react-phone-number-input";
 
 export function SignUpForm({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<"div">) {
+  const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState<string | undefined>(undefined);
   const [password, setPassword] = useState("");
   const [repeatPassword, setRepeatPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -47,7 +52,13 @@ export function SignUpForm({
           emailRedirectTo: `${window.location.origin}/callback`,
         },
       });
+      const { error: updateError } = await supabase.auth.updateUser({
+        data: { display_name: fullName },
+        phone: phoneNumber,
+      });
+
       if (error) throw error;
+      if (updateError) throw updateError;
       router.push("/sign-up-success");
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "An error occurred");
@@ -67,6 +78,17 @@ export function SignUpForm({
           <form onSubmit={handleSignUp}>
             <div className="flex flex-col gap-6">
               <div className="grid gap-2">
+                <Label htmlFor="email">Full Name</Label>
+                <Input
+                  id="full-name"
+                  type="text"
+                  placeholder="John Doe"
+                  required
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                />
+              </div>
+              <div className="grid gap-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
                   id="email"
@@ -77,6 +99,23 @@ export function SignUpForm({
                   onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
+              {/* <div className="grid gap-2">
+                <Label htmlFor="phone-number">Phone Number</Label>
+                <PhoneInput
+                  className=""
+                  placeholder="Optional"
+                  defaultCountry="US"
+                  value={phoneNumber}
+                  onChange={setPhoneNumber}
+                  error={
+                    phoneNumber
+                      ? isValidPhoneNumber(phoneNumber)
+                        ? undefined
+                        : "Invalid phone number"
+                      : "Phone number required"
+                  }
+                />
+              </div> */}
               <div className="grid gap-2">
                 <div className="flex items-center">
                   <Label htmlFor="password">Password</Label>

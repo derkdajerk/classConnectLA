@@ -109,7 +109,7 @@ export default function ContactForm() {
                 type="email"
                 name="email"
                 id="email"
-                placeholder="adam@sandler.com"
+                placeholder="m@example.com"
                 required
                 className="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400"
               />

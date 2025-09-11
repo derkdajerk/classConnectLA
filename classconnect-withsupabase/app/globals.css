@@ -68,3 +68,49 @@
     @apply text-base;
   }
 }
+
+@layer components {
+  .PhoneInput {
+    @apply flex h-9 w-full min-w-0 rounded-md border border-input bg-transparent text-base shadow-sm transition-[color,box-shadow] outline-none md:text-sm;
+    @apply focus-within:border-ring focus-within:ring-ring/50 focus-within:ring-[3px];
+  }
+
+  .PhoneInputInput {
+    @apply flex-1 border-0 bg-transparent px-3 py-1 text-base outline-none placeholder:text-muted-foreground md:text-sm;
+    @apply disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .PhoneInputCountry {
+    @apply flex items-center border-r border-input px-3;
+  }
+
+  .PhoneInputCountrySelect {
+    @apply border-0 bg-transparent outline-none text-sm;
+    @apply focus:outline-none focus:ring-0;
+  }
+
+  .PhoneInputCountryIcon {
+    @apply mr-2;
+  }
+
+  .PhoneInputCountryIconImg {
+    @apply w-5 h-3 object-cover;
+  }
+
+  .PhoneInputCountrySelectArrow {
+    @apply ml-1 w-0 h-0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 4px solid hsl(var(--muted-foreground));
+  }
+
+  /* Error state styling */
+  .PhoneInput[aria-invalid="true"] {
+    @apply border-destructive ring-destructive/20;
+  }
+
+  /* Focus state enhancement */
+  .PhoneInput:focus-within .PhoneInputCountrySelectArrow {
+    border-top-color: hsl(var(--ring));
+  }
+}
