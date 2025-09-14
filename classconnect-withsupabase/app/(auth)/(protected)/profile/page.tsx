@@ -1,3 +1,5 @@
 export default function page() {
-  return <div>page</div>;
+  return (
+    <div className="items-center justify-center flex">Under construction.</div>
+  );
 }
