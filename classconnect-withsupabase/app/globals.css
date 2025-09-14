@@ -78,6 +78,31 @@
   .PhoneInputInput {
     @apply flex-1 border-0 bg-transparent px-3 py-1 text-base outline-none placeholder:text-muted-foreground md:text-sm;
     @apply disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50;
+    border: none !important;
+    outline: none !important;
+  }
+
+  .PhoneInputInput:focus,
+  .PhoneInputInput:focus-visible,
+  .PhoneInputInput:active {
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    ring: none !important;
+    border-color: transparent !important;
+    outline-color: transparent !important;
+    outline-width: 0 !important;
+    outline-style: none !important;
+  }
+
+  /* More specific selectors to override library styles */
+  .PhoneInput .PhoneInputInput:focus,
+  .PhoneInput .PhoneInputInput:focus-visible,
+  .PhoneInput .PhoneInputInput:active {
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    border-color: transparent !important;
   }
 
   .PhoneInputCountry {
@@ -99,9 +124,6 @@
 
   .PhoneInputCountrySelectArrow {
     @apply ml-1 w-0 h-0;
-    border-left: 4px solid transparent;
-    border-right: 4px solid transparent;
-    border-top: 4px solid hsl(var(--muted-foreground));
   }
 
   /* Error state styling */

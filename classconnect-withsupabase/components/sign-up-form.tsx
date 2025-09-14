@@ -100,9 +100,11 @@ export function SignUpForm({
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="phone-number">Phone Number</Label>
+                <div className="flex items-center">
+                  <Label htmlFor="phone-number">Phone Number</Label>
+                </div>
                 <PhoneInput
-                  className=""
+                  className="p-1"
                   placeholder="Optional"
                   defaultCountry="US"
                   value={phoneNumber}
