@@ -46,10 +46,15 @@ const BottomNavBarMobile = () => {
         <CalendarDays className="h-5 w-5" />
         <span className="text-xs mt-1">Calendar</span>
       </Link>
-      <button className="flex flex-col items-center justify-center p-2">
+      <Link
+        href="/profile"
+        className={`flex flex-col items-center justify-center p-2 ${
+          isActive("/profile") ? "text-primary" : ""
+        }`}
+      >
         <User className="h-5 w-5" />
         <span className="text-xs mt-1">Profile</span>
-      </button>
+      </Link>
     </div>
   );
 };

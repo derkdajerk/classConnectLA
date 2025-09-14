@@ -13,14 +13,9 @@ export default function ProtectedLayout({
     <main className="flex flex-col overflow-x-hidden w-full flex-1">
       <div className="w-full flex flex-col min-h-screen">
         <nav className="w-full hidden md:flex justify-center border-b border-b-foreground/10 min-h-16">
-          <div className="w-full max-w-5xl flex flex-col md:flex-row justify-between p-2 px-3 md:px-5 text-sm">
-            {/* Mobile: ClassConnect on its own row at top */}
-            {/* <div className="font-semibold text-lg w-full text-center mb-1 md:hidden">
-              <Link href={"/"}>ClassConnect</Link>
-            </div> */}
-
+          <div className="w-full max-w-5xl flex flex-col md:flex-row p-2 px-3 md:px-5 text-sm">
             {/* Desktop: Regular row layout */}
-            <div className="flex w-full justify-between items-center">
+            <div className="flex w-full items-center justify-between">
               <div className="font-semibold text-2xl hidden md:block">
                 <Link href={"/"}>ClassConnectLA</Link>
               </div>

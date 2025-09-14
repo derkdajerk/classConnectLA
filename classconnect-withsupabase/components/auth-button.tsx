@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Button } from "./ui/button";
 import { createClient } from "@/lib/supabase/server";
 import { LogoutButton } from "./logout-button";
-import { HomeIcon, Bookmark, Calendar, CalendarDays } from "lucide-react";
+import { HomeIcon, Bookmark, Calendar, CalendarDays, User } from "lucide-react";
 
 export async function AuthButton() {
   const supabase = await createClient();
@@ -13,9 +13,9 @@ export async function AuthButton() {
   const displayName = user?.user_metadata.display_name || user?.email;
 
   return user ? (
-    <div className="flex flex-col w-full md:flex-row md:items-center gap-2 text-sm">
+    <div className="flex flex-col w-full md:flex-row md:items-center text-sm md:gap-44">
       {/* Desktop greeting */}
-      <span className="whitespace-nowrap md:inline hidden text-md">
+      <span className="whitespace-nowrap md:inline hidden text-lg">
         Hey, {displayName}!
       </span>
 
@@ -25,32 +25,42 @@ export async function AuthButton() {
       </span>
 
       {/* Button row - shown below greeting on mobile, inline on desktop */}
-      <div className="flex flex-row gap-3 items-center w-full md:w-auto justify-center md:justify-start md:mt-0">
-        <Link href="/">
-          <Button iconSize="md" className="md:flex">
-            <HomeIcon className="h-4 w-4" />
-            <span className="md:inline hidden">Home</span>
-          </Button>
-        </Link>
-        <Link href={"/schedule"}>
-          <Button iconSize="md" className="md:flex">
-            <Calendar className="h-5 w-5" />
-            <span className="md:inline hidden flex-col">Schedules</span>
-          </Button>
-        </Link>
-        <Link href={"/bookmarks"}>
-          <Button iconSize="md" className="md:flex">
-            <Bookmark className="h-4 w-4" />
-            <span className="md:inline hidden">Saved Classes</span>
-          </Button>
-        </Link>
-        <Link href={"/user-calendar"}>
-          <Button iconSize="md" className="md:flex">
-            <CalendarDays className="h-4 w-4" />
-            <span className="md:inline hidden">Calendar</span>
-          </Button>
-        </Link>
-        <LogoutButton />
+      <div className="flex flex-col gap-1 items-center w-full md:w-auto justify-center md:justify-start md:mt-0">
+        <div className="flex flex-row gap-1">
+          <Link href="/">
+            <Button iconSize="md" className="md:flex">
+              <HomeIcon className="h-4 w-4" />
+              <span className="md:inline hidden">Home</span>
+            </Button>
+          </Link>
+          <Link href={"/schedule"}>
+            <Button iconSize="md" className="md:flex">
+              <Calendar className="h-5 w-5" />
+              <span className="md:inline hidden flex-col">Schedules</span>
+            </Button>
+          </Link>
+          <Link href={"/profile"}>
+            <Button iconSize="md" className="md:flex">
+              <User className="h-5 w-5" />
+              <span className="md:inline hidden flex-col">Profile</span>
+            </Button>
+          </Link>
+        </div>
+        <div className="flex flex-row gap-1">
+          <Link href={"/bookmarks"}>
+            <Button iconSize="md" className="md:flex">
+              <Bookmark className="h-4 w-4" />
+              <span className="md:inline hidden">Saved Classes</span>
+            </Button>
+          </Link>
+          <Link href={"/user-calendar"}>
+            <Button iconSize="md" className="md:flex">
+              <CalendarDays className="h-4 w-4" />
+              <span className="md:inline hidden">Calendar</span>
+            </Button>
+          </Link>
+          <LogoutButton />
+        </div>
       </div>
     </div>
   ) : (
