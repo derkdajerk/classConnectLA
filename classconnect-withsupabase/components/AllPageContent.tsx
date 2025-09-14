@@ -14,17 +14,6 @@ import {
 import ClassCheckBoxs from "./ClassCheckBoxs";
 import { TimeRangeSelector } from "./TimeRangeSelector";
 import { DanceClass } from "../lib/danceclass";
-import {
-  Sheet,
-  SheetContent,
-  SheetTrigger,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-} from "./ui/sheet";
-import { Button } from "./ui/button";
-import { CalendarDaysIcon } from "lucide-react";
-import Calendar08 from "./calendar-08";
 
 interface AllPageContentProps {
   searchTerm: string;

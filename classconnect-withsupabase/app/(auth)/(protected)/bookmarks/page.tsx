@@ -18,22 +18,9 @@ import {
   Trash2,
   CheckSquare,
   Square,
-  SearchIcon,
-  X,
-  MapPin,
-  SlidersHorizontal,
-  CalendarDaysIcon,
 } from "lucide-react";
 import { toast } from "sonner";
 import { removeClassFromBookmarks } from "@/lib/classfunctions";
-import {
-  Sheet,
-  SheetContent,
-  SheetTrigger,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-} from "@/components/ui/sheet";
 import Link from "next/link";
 import MobileLayoutSavedClasses from "@/components/MobileLayoutSavedClasses";
 
