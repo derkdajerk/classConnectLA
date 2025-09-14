@@ -2,7 +2,7 @@
 
 import { useState, FormEvent } from "react";
 import { Button } from "@/components/ui/button";
-import { ThemeSwitcher } from "@/components/theme-switcher";
+import { SiteWideFooter } from "@/components/SiteWideFooter";
 import Link from "next/link";
 
 export default function ContactForm() {
@@ -146,16 +146,7 @@ export default function ContactForm() {
           </form>
         </div>
       </main>
-      <footer className="w-full hidden md:flex items-center justify-center border-t mx-auto text-center text-muted-foreground text-sm gap-8 py-4 mt-auto">
-        <p>
-          Contact:{" "}
-          <a href="mailto:derek@derektrauner.com" className="">
-            derek@derektrauner.com
-          </a>
-          <br />© 2025 Traunico, LLC. All rights reserved.
-        </p>
-        <ThemeSwitcher />
-      </footer>
+      <SiteWideFooter hideOnMobile />
     </>
   );
 }

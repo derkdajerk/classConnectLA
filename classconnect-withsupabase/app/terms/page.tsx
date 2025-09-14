@@ -1,6 +1,3 @@
-// app/terms-of-use/page.tsx   (Next.js App Router)
-// or pages/terms-of-use.tsx  (Pages Router)
-
 import Link from "next/link";
 import React from "react";
 

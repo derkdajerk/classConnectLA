@@ -1,6 +1,3 @@
-// app/privacy-policy/page.tsx (Next.js 13+ App Router)
-// or pages/privacy-policy.tsx (if you're still on Pages Router)
-
 import Link from "next/link";
 import React from "react";
 

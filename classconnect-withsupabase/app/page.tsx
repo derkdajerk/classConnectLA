@@ -1,7 +1,7 @@
 import { EnvVarWarning } from "@/components/env-var-warning";
 import { AuthButton } from "@/components/auth-button";
-import { ThemeSwitcher } from "@/components/theme-switcher";
 import { hasEnvVars } from "@/lib/utils";
+import { SiteWideFooter } from "@/components/SiteWideFooter";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
@@ -49,16 +49,7 @@ export default function Home() {
           </section>
         </main>
 
-        <footer className="w-full flex items-center justify-center border-t mx-auto text-center text-muted-foreground text-sm gap-2 py-4 mt-auto">
-          <p>
-            Contact:{" "}
-            <a href="mailto:derek@derektrauner.com" className="">
-              derek@derektrauner.com
-            </a>
-            <br />© 2025 Traunico, LLC. All rights reserved.
-          </p>
-          <ThemeSwitcher />
-        </footer>
+        <SiteWideFooter />
       </div>
     </main>
   );
