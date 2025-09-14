@@ -99,7 +99,7 @@ export function SignUpForm({
                   onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
-              {/* <div className="grid gap-2">
+              <div className="grid gap-2">
                 <Label htmlFor="phone-number">Phone Number</Label>
                 <PhoneInput
                   className=""
@@ -115,7 +115,7 @@ export function SignUpForm({
                       : "Phone number required"
                   }
                 />
-              </div> */}
+              </div>
               <div className="grid gap-2">
                 <div className="flex items-center">
                   <Label htmlFor="password">Password</Label>
