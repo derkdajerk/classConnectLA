@@ -72,7 +72,6 @@ const MobileHeaderNav: React.FC<MobileHeaderNavProps> = ({
         <MapPin className="h-6 w-6 mr-2" />
         <h1 className="text-xl font-bold">{title}</h1>
       </Link>
-
       <div className="flex gap-2">
         {/* Time Filter */}
         {showTimeFilter && (

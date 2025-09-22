@@ -59,7 +59,7 @@ export function ForgotPasswordForm({
             </p>
           </CardContent>
           <CardContent className="flex justify-center gap-2">
-            <Link href="/" legacyBehavior>
+            <Link href="/">
               <Button variant={"outline"}>Home</Button>
             </Link>
             <Link href="/login">
@@ -104,7 +104,7 @@ export function ForgotPasswordForm({
             </form>
           </CardContent>
           <CardContent className="flex justify-center gap-2">
-            <Link href="/" legacyBehavior>
+            <Link href="/">
               <Button variant={"outline"}>Home</Button>
             </Link>
             <Link href="/login">

@@ -34,10 +34,8 @@ const MobileLayoutSavedClasses = ({
         </Link>
         <div className="flex gap-2"></div>
       </div>
-
       {/* Content Area - Scrollable */}
       <div className="flex-1 overflow-y-auto">{children}</div>
-
       <BottomNavBarMobile />
     </main>
   );

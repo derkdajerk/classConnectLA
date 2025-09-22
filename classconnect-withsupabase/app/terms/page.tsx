@@ -20,14 +20,12 @@ export default function TermsOfUsePage() {
         </Link>
       </div>
       <h1 className="text-2xl font-bold mb-4">Terms &amp; Conditions</h1>
-
       <p className="mb-4">
         These terms and conditions apply to the ClassConnectLA app (hereby
         referred to as &quot;Application&quot;) for mobile devices that was
         created by Traunico, LLC (hereby referred to as &quot;Service
         Provider&quot;) as a Freemium service.
       </p>
-
       <p className="mb-4">
         Upon downloading or utilizing the Application, you are automatically
         agreeing to the following terms. It is strongly advised that you
@@ -40,7 +38,6 @@ export default function TermsOfUsePage() {
         intellectual property rights related to the Application remain the
         property of the Service Provider.
       </p>
-
       <p className="mb-4">
         The Service Provider is dedicated to ensuring that the Application is as
         beneficial and efficient as possible. As such, they reserve the right to
@@ -48,7 +45,6 @@ export default function TermsOfUsePage() {
         any reason. The Service Provider assures you that any charges for the
         Application or its services will be clearly communicated to you.
       </p>
-
       <p className="mb-4">
         The Application stores and processes personal data that you have
         provided to the Service Provider in order to provide the Service. It is
@@ -60,7 +56,6 @@ export default function TermsOfUsePage() {
         malicious programs, compromise your phone&apos;s security features, and
         may result in the Application not functioning correctly or at all.
       </p>
-
       <div className="mb-4">
         <p className="mb-2">
           Please note that the Application utilizes third-party services that
@@ -91,7 +86,6 @@ export default function TermsOfUsePage() {
           </li>
         </ul>
       </div>
-
       <p className="mb-4">
         Please be aware that the Service Provider does not assume responsibility
         for certain aspects. Some functions of the Application require an active
@@ -100,7 +94,6 @@ export default function TermsOfUsePage() {
         Application does not function at full capacity due to lack of access to
         Wi-Fi or if you have exhausted your data allowance.
       </p>
-
       <p className="mb-4">
         If you are using the application outside of a Wi-Fi area, please be
         aware that your mobile network provider&apos;s agreement terms still
@@ -113,7 +106,6 @@ export default function TermsOfUsePage() {
         device on which you are using the application, they assume that you have
         obtained permission from the bill payer.
       </p>
-
       <p className="mb-4">
         Similarly, the Service Provider cannot always assume responsibility for
         your usage of the application. For instance, it is your responsibility
@@ -121,7 +113,6 @@ export default function TermsOfUsePage() {
         battery and you are unable to access the Service, the Service Provider
         cannot be held responsible.
       </p>
-
       <p className="mb-4">
         In terms of the Service Provider&apos;s responsibility for your use of
         the application, it is important to note that while they strive to
@@ -131,7 +122,6 @@ export default function TermsOfUsePage() {
         loss, direct or indirect, that you experience as a result of relying
         entirely on this functionality of the application.
       </p>
-
       <p className="mb-4">
         The Service Provider may wish to update the application at some point.
         The application is currently available as per the requirements for the
@@ -149,7 +139,6 @@ export default function TermsOfUsePage() {
         will end; (b) you must cease using the application, and (if necessary)
         delete it from your device.
       </p>
-
       <h2 className="text-lg font-semibold mt-6 mb-2">
         No Warranty and Limitation of Liability
       </h2>
@@ -166,7 +155,6 @@ export default function TermsOfUsePage() {
         dissatisfied with the Application, your sole remedy is to stop using it
         and, if applicable, cancel your subscription.
       </p>
-
       <h2 className="text-lg font-semibold mt-6 mb-2">
         Changes to These Terms and Conditions
       </h2>
@@ -176,11 +164,9 @@ export default function TermsOfUsePage() {
         changes. The Service Provider will notify you of any changes by posting
         the new Terms and Conditions on this page.
       </p>
-
       <p className="mb-4">
         These terms and conditions are effective as of 2025-09-14
       </p>
-
       <h2 className="text-lg font-semibold mt-6 mb-2">Contact Us</h2>
       <p className="mb-6">
         If you have any questions or suggestions about the Terms and Conditions,
@@ -190,9 +176,7 @@ export default function TermsOfUsePage() {
         </a>
         .
       </p>
-
       <hr className="mb-6" />
-
       <p className="text-sm text-gray-600">
         This Terms and Conditions page was generated by{" "}
         <a

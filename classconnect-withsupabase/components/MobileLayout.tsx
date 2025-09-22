@@ -561,7 +561,6 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
           </Sheet>
         </div>
       </div>
-
       {/* Studio Navigation Tabs */}
       <div className="flex whitespace-nowrap py-3 justify-around border-b bg-white dark:bg-gray-950 shadow-sm mx-auto w-full">
         {studios.map((studio) => (
@@ -578,7 +577,6 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
           </button>
         ))}
       </div>
-
       {/* Circular Date Picker with Swipe Navigation */}
       <div className="py-4 bg-white dark:bg-gray-950 border-b relative">
         {/* Date scrolling container with prev/current/next pages */}
@@ -604,12 +602,10 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
         <div className="absolute left-0 top-1/2 -translate-y-1/2 w-6 h-16 bg-gradient-to-r from-white/40 to-transparent dark:from-gray-950/40 pointer-events-none"></div>
         <div className="absolute right-0 top-1/2 -translate-y-1/2 w-6 h-16 bg-gradient-to-l from-white/40 to-transparent dark:from-gray-950/40 pointer-events-none"></div>
       </div>
-
       {/* Loading Indicator */}
       <div className="px-4">
         {isLoading && <Progress value={progress} className="h-1" />}
       </div>
-
       {/* Content Area - Scrollable */}
       <div className="flex-1 overflow-y-auto">
         <div className="px-4 py-2 w-full">
@@ -633,7 +629,6 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
           )}
         </div>
       </div>
-
       {/* iOS-style Bottom Navigation */}
       <BottomNavBarMobile />
     </main>

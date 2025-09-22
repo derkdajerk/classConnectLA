@@ -25,6 +25,9 @@ export default function ProfileSettingsPage() {
   const [oldEmail, setOldEmail] = useState("");
   const [oldPhone, setOldPhone] = useState("");
   const [phoneCountry, setPhoneCountry] = useState<string>("");
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const supabase = createClient();
@@ -80,7 +83,9 @@ export default function ProfileSettingsPage() {
       if (error) throw error;
       toast.success(
         `Profile updated successfully!${
-          payload.email ? "\n\nPlease confirm the email change" : ""
+          payload.email
+            ? "\n\nPlease confirm the email change in your inbox"
+            : ""
         }`
       );
       // update old values so they match the new state
@@ -92,19 +97,21 @@ export default function ProfileSettingsPage() {
     }
   };
 
-  const handleResetPassword = () => {
+  const handleResetPassword = async () => {
     const supabase = createClient();
+
     setIsLoading(true);
     setError(null);
 
     try {
-      // The url which will be included in the email. This URL needs to be configured in your redirect URLs in the Supabase dashboard at https://supabase.com/dashboard/project/_/auth/url-configuration
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      const { error } = await supabase.auth.resetPasswordForEmail(oldEmail, {
         redirectTo: `${window.location.origin}/callback?next=/update-password`,
       });
       if (error) throw error;
+      toast.success("Check your email, password reset instructions sent");
       setSuccess(true);
     } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : "An error occurred");
       setError(error instanceof Error ? error.message : "An error occurred");
     } finally {
       setIsLoading(false);
@@ -180,10 +187,17 @@ export default function ProfileSettingsPage() {
           {/* Password - Redirect button */}
           <div className="space-y-2">
             <Label>Password</Label>
-            <Button variant="outline" className="w-fit">
+            <Button
+              onClick={() => {
+                handleResetPassword();
+              }}
+              variant="outline"
+              className="w-fit"
+            >
               Change Password
             </Button>
           </div>
+          {error && <p className="text-sm text-red-500">{error}</p>}
 
           {/* Save Button */}
           <div>

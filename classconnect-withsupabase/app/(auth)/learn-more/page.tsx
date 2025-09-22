@@ -59,7 +59,6 @@ export default function LearnMorePage() {
           </Button>
         </Link>
       </motion.section>
-
       {/* About / Story Section */}
       <motion.section
         initial={{ opacity: 0 }}
@@ -81,7 +80,6 @@ export default function LearnMorePage() {
           schedule.
         </p>
       </motion.section>
-
       {/* Features Section */}
       <motion.section
         initial={{ opacity: 0, y: 30 }}
@@ -156,7 +154,6 @@ export default function LearnMorePage() {
           </p>
         </div>
       </motion.section>
-
       {/* Call to Action */}
       <motion.section
         initial={{ opacity: 0 }}
