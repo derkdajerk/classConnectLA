@@ -16,6 +16,7 @@ import PhoneInput, {
   parsePhoneNumber,
 } from "react-phone-number-input";
 import { toast } from "sonner";
+import BottomNavBarMobile from "@/components/BottomNavBarMobile";
 
 export default function ProfileSettingsPage() {
   const [name, setName] = useState("");
@@ -28,6 +29,23 @@ export default function ProfileSettingsPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    // Function to check if screen is mobile size
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    // Set initial value
+    handleResize();
+
+    // Add event listener for window resize
+    window.addEventListener("resize", handleResize);
+
+    // Clean up event listener on component unmount
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   useEffect(() => {
     const supabase = createClient();
@@ -227,6 +245,8 @@ export default function ProfileSettingsPage() {
           </Button>
         </CardContent>
       </Card>
+
+      {isMobile && <BottomNavBarMobile />}
     </div>
   );
 }
