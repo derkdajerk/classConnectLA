@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useEffect, useState } from "react";
@@ -9,23 +11,105 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { User } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import "react-phone-number-input/style.css";
-import PhoneInput, { isValidPhoneNumber } from "react-phone-number-input";
+import PhoneInput, {
+  isValidPhoneNumber,
+  parsePhoneNumber,
+} from "react-phone-number-input";
+import { toast } from "sonner";
 
 export default function ProfileSettingsPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [oldName, setOldName] = useState("");
+  const [oldEmail, setOldEmail] = useState("");
+  const [oldPhone, setOldPhone] = useState("");
+  const [phoneCountry, setPhoneCountry] = useState<string>("");
 
-  // Get current user
   useEffect(() => {
     const supabase = createClient();
     supabase.auth.getUser().then(({ data }) => {
-      console.log(data);
-      setName(data.user?.user_metadata.display_name || "");
-      setEmail(data.user?.email || "");
-      setPhoneNumber(data.user?.phone || "");
+      const user = data.user;
+      if (!user) return;
+      const currentName = user.user_metadata.display_name || "";
+      const currentEmail = user.email || "";
+      const currentPhone = user.user_metadata.phone_number || "";
+      const parsed = parsePhoneNumber(currentPhone);
+      console.log(parsed);
+      const currentPhoneCountry = parsed?.countryCallingCode;
+      console.log(typeof currentPhoneCountry);
+      const currentNationalNumber = parsed?.nationalNumber;
+
+      setName(currentName);
+      setEmail(currentEmail);
+      setPhoneNumber(currentPhone ?? "");
+      setPhoneCountry(currentPhoneCountry ?? "");
+
+      setOldName(currentName);
+      setOldEmail(currentEmail);
+      setOldPhone(currentPhone);
     });
   }, []);
+
+  const handleUpdateProfile = async () => {
+    const supabase = createClient();
+    const payload: any = {};
+
+    // check email (special root field)
+    if (email !== oldEmail) {
+      payload.email = email;
+    }
+
+    // check metadata (name, phone, etc.)
+    const metadata: any = {};
+    if (name !== oldName) metadata.display_name = name;
+    if (phoneNumber !== oldPhone) metadata.phone_number = phoneNumber;
+
+    if (Object.keys(metadata).length > 0) {
+      payload.data = metadata;
+    }
+
+    if (Object.keys(payload).length === 0) {
+      toast.message("No changes to update");
+      return;
+    }
+
+    console.log(payload);
+    try {
+      const { error } = await supabase.auth.updateUser(payload);
+      if (error) throw error;
+      toast.success(
+        `Profile updated successfully!${
+          payload.email ? "\n\nPlease confirm the email change" : ""
+        }`
+      );
+      // update old values so they match the new state
+      setOldName(name);
+      setOldEmail(email);
+      setOldPhone(phoneNumber);
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : "An error occurred");
+    }
+  };
+
+  const handleResetPassword = () => {
+    const supabase = createClient();
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      // The url which will be included in the email. This URL needs to be configured in your redirect URLs in the Supabase dashboard at https://supabase.com/dashboard/project/_/auth/url-configuration
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/callback?next=/update-password`,
+      });
+      if (error) throw error;
+      setSuccess(true);
+    } catch (error: unknown) {
+      setError(error instanceof Error ? error.message : "An error occurred");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="w-full max-w-2xl mx-auto p-4 space-y-6">
@@ -36,7 +120,7 @@ export default function ProfileSettingsPage() {
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Avatar Section */}
-          <div className="flex items-center gap-4">
+          {/* <div className="flex items-center gap-4">
             <Avatar className="h-20 w-20">
               <AvatarImage src="/placeholder.png" alt="Profile picture" />
               <AvatarFallback>
@@ -49,7 +133,7 @@ export default function ProfileSettingsPage() {
                 Remove
               </Button>
             </div>
-          </div>
+          </div> */}
 
           {/* Name */}
           <div className="space-y-2">
@@ -58,7 +142,7 @@ export default function ProfileSettingsPage() {
               id="name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Your name"
+              placeholder={name || "Your name"}
             />
           </div>
 
@@ -70,7 +154,7 @@ export default function ProfileSettingsPage() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
+              placeholder={email || "Your email"}
             />
           </div>
 
@@ -79,9 +163,9 @@ export default function ProfileSettingsPage() {
             <Label htmlFor="phone">Phone</Label>
             <PhoneInput
               className="p-1"
-              placeholder="(123) 456-7890"
+              placeholder={phoneNumber || "(123) 456-7890"}
               defaultCountry="US"
-              value={phoneNumber}
+              value={phoneNumber || undefined}
               onChange={(value) => setPhoneNumber(value || "")}
               error={
                 phoneNumber
@@ -103,7 +187,14 @@ export default function ProfileSettingsPage() {
 
           {/* Save Button */}
           <div>
-            <Button className="w-full">Save Changes</Button>
+            <Button
+              onClick={() => {
+                handleUpdateProfile();
+              }}
+              className="w-full"
+            >
+              Save Changes
+            </Button>
           </div>
         </CardContent>
       </Card>
