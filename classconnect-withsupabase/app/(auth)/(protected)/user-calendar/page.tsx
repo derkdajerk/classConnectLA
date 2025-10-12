@@ -294,6 +294,11 @@ export default function UserCalendar() {
               onRemoveEvent={removeFromSchedule}
               formatTime={formatTime}
               getEndTime={getEndTime}
+              onTodayClick={() => {
+                const today = new Date();
+                setCurrentDate(today);
+                setSelectedDate(today);
+              }}
             />
           </div>
 
@@ -703,6 +708,18 @@ export default function UserCalendar() {
         </div>
 
         <div className="flex items-center gap-4">
+          {/* Today Button */}
+          <Button
+            variant="outline"
+            onClick={() => {
+              const today = new Date();
+              setCurrentDate(today);
+              setSelectedDate(today);
+            }}
+          >
+            Today
+          </Button>
+
           {/* View Selector */}
           <Select
             value={viewType}

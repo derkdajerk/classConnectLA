@@ -2,12 +2,14 @@
 
 import * as React from "react";
 import { Trash2, User, Clock, Calendar as CalendarIcon } from "lucide-react";
+import { DayButton, getDefaultClassNames } from "react-day-picker";
 
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { DanceClass } from "@/types/danceClass";
+import { cn } from "@/lib/utils";
 
 interface CalendarEvent extends DanceClass {
   scheduled_at?: string;
@@ -20,6 +22,7 @@ interface Calendar31MobileProps {
   onRemoveEvent?: (classId: string, className: string) => void;
   formatTime: (time: string) => string;
   getEndTime: (startTime: string, lengthStr: string) => string;
+  onTodayClick?: () => void;
 }
 
 export default function Calendar31Mobile({
@@ -29,13 +32,18 @@ export default function Calendar31Mobile({
   onRemoveEvent,
   formatTime,
   getEndTime,
+  onTodayClick,
 }: Calendar31MobileProps) {
   const [date, setDate] = React.useState<Date | undefined>(
     selectedDate || new Date()
   );
+  const [month, setMonth] = React.useState<Date>(selectedDate || new Date());
 
   const handleDateSelect = (newDate: Date | undefined) => {
     setDate(newDate);
+    if (newDate) {
+      setMonth(newDate);
+    }
     if (onDateSelect) {
       onDateSelect(newDate);
     }
@@ -57,8 +65,75 @@ export default function Calendar31Mobile({
   React.useEffect(() => {
     if (selectedDate) {
       setDate(selectedDate);
+      setMonth(selectedDate);
     }
   }, [selectedDate]);
+
+  // Create a set of dates that have events for quick lookup
+  const datesWithEvents = React.useMemo(() => {
+    const dateSet = new Set<string>();
+    events.forEach((event) => {
+      if (event.date) {
+        dateSet.add(event.date);
+      }
+    });
+    return dateSet;
+  }, [events]);
+
+  // Check if a date has events
+  const hasEventsOnDate = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    const dateStr = `${year}-${month}-${day}`;
+    return datesWithEvents.has(dateStr);
+  };
+
+  // Custom day button component that shows a dot for dates with events
+  const CustomDayButton = ({
+    className,
+    day,
+    modifiers,
+    ...props
+  }: React.ComponentProps<typeof DayButton>) => {
+    const defaultClassNames = getDefaultClassNames();
+    const ref = React.useRef<HTMLButtonElement>(null);
+
+    React.useEffect(() => {
+      if (modifiers.focused) ref.current?.focus();
+    }, [modifiers.focused]);
+
+    const hasEvents = hasEventsOnDate(day.date);
+
+    return (
+      <Button
+        ref={ref}
+        variant="ghost"
+        size="icon"
+        data-day={day.date.toLocaleDateString()}
+        data-selected-single={
+          modifiers.selected &&
+          !modifiers.range_start &&
+          !modifiers.range_end &&
+          !modifiers.range_middle
+        }
+        className={cn(
+          "data-[selected-single=true]:bg-primary data-[selected-single=true]:text-primary-foreground flex aspect-square size-auto w-full flex-col items-center justify-center leading-none font-normal relative",
+          defaultClassNames.day,
+          className
+        )}
+        {...props}
+      >
+        <span>{day.date.getDate()}</span>
+        {hasEvents && (
+          <span
+            className="absolute bottom-1 w-1 h-1 rounded-full bg-primary data-[selected-single=true]:bg-primary-foreground"
+            data-selected-single={modifiers.selected}
+          />
+        )}
+      </Button>
+    );
+  };
 
   return (
     <>
@@ -70,7 +145,12 @@ export default function Calendar31Mobile({
               mode="single"
               selected={date}
               onSelect={handleDateSelect}
+              month={month}
+              onMonthChange={setMonth}
               className="bg-transparent p-0 w-full mx-auto [&_table]:w-full [&_td]:text-center [&_th]:text-center [&_.rdp-cell]:min-h-[2.5rem] [&_.rdp-cell]:flex [&_.rdp-cell]:items-center [&_.rdp-cell]:justify-center"
+              components={{
+                DayButton: CustomDayButton,
+              }}
               required
             />
           </CardContent>
@@ -87,6 +167,20 @@ export default function Calendar31Mobile({
                   year: "numeric",
                 })}
               </div>
+              {onTodayClick && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const today = new Date();
+                    handleDateSelect(today);
+                    onTodayClick();
+                  }}
+                  className="text-xs h-7 px-3"
+                >
+                  Today
+                </Button>
+              )}
               <div className="text-xs text-muted-foreground">
                 {selectedDateEvents.length}{" "}
                 {selectedDateEvents.length === 1 ? "class" : "classes"}
