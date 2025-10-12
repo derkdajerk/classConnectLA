@@ -136,6 +136,58 @@ export default function ProfileSettingsPage() {
     }
   };
 
+  const deleteAccount = async () => {
+    // Confirmation dialog
+    const confirmed = window.confirm(
+      "Are you sure you want to delete your account? This action cannot be undone and will remove all your saved classes and calendar data."
+    );
+
+    if (!confirmed) return;
+
+    const supabase = createClient();
+    const { data, error } = await supabase.auth.getUser();
+    if (error) {
+      toast.error("Failed to get user information");
+      return;
+    }
+
+    const userId = data?.user.id;
+    if (!userId) {
+      toast.error("No user ID found");
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      const response = await fetch("/api/users/deleteAccount", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ userId }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to delete account");
+      }
+
+      toast.success("Account deleted successfully");
+
+      // Logout and redirect to home
+      await supabase.auth.signOut();
+      window.location.href = "/";
+    } catch (error) {
+      console.error("Delete account error:", error);
+      toast.error(
+        error instanceof Error ? error.message : "Failed to delete account"
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="w-full max-w-2xl mx-auto p-4 space-y-6">
       {/* Profile Header */}
@@ -240,8 +292,13 @@ export default function ProfileSettingsPage() {
           <p className="text-sm text-muted-foreground">
             Deleting your account is permanent and cannot be undone.
           </p>
-          <Button variant="destructive" className="w-full">
-            Delete Account
+          <Button
+            variant="destructive"
+            className="w-full"
+            onClick={deleteAccount}
+            disabled={isLoading}
+          >
+            {isLoading ? "Deleting Account..." : "Delete Account"}
           </Button>
         </CardContent>
       </Card>

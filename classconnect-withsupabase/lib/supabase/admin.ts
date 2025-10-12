@@ -2,16 +2,15 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
 /**
- * Especially important if using Fluid compute: Don't put this client in a
- * global variable. Always create a new client within each function when using
- * it.
+ * Admin client with service role key for admin operations only.
+ * Use sparingly and only for operations that require elevated privileges.
  */
-export async function createClient() {
+export async function createAdminClient() {
   const cookieStore = await cookies();
 
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_OR_ANON_KEY!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!, // Service role key for admin operations
     {
       cookies: {
         getAll() {
