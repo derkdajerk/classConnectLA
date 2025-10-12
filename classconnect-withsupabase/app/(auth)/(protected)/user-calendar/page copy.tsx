@@ -24,7 +24,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import {
-  Calendar,
+  Calendar as CalendarIcon,
   Clock,
   User,
   Trash2,
@@ -37,7 +37,9 @@ import Calendar31Mobile from "@/components/calendar-31-mobile";
 import { MapPin } from "lucide-react";
 import Link from "next/link";
 import BottomNavBarMobile from "@/components/BottomNavBarMobile";
-import { Label } from "@/components/ui/label";
+import { Calendar } from "@/components/ui/calendar";
+import { DayButton, getDefaultClassNames } from "react-day-picker";
+import { cn } from "@/lib/utils";
 
 type ViewType = "month" | "week" | "day";
 
@@ -74,7 +76,7 @@ export default function UserCalendar() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Removed the problematic useEffect that was preventing navigation arrows from working
+  // Removed the problematic useEffect that was preventing navigation
 
   const {
     data: events = [],
@@ -189,18 +191,6 @@ export default function UserCalendar() {
   };
 
   // Navigation functions
-  const navigateMonth = (direction: "prev" | "next") => {
-    setCurrentDate((prev) => {
-      const newDate = new Date(prev);
-      if (direction === "prev") {
-        newDate.setMonth(prev.getMonth() - 1);
-      } else {
-        newDate.setMonth(prev.getMonth() + 1);
-      }
-      return newDate;
-    });
-  };
-
   const navigateWeek = (direction: "prev" | "next") => {
     setCurrentDate((prev) => {
       const newDate = new Date(prev);
@@ -226,9 +216,7 @@ export default function UserCalendar() {
     const month = String(date.getMonth() + 1).padStart(2, "0");
     const day = String(date.getDate()).padStart(2, "0");
     const dateStr = `${year}-${month}-${day}`;
-    return events
-      .filter((event) => event.date === dateStr)
-      .sort((a, b) => a.time.localeCompare(b.time)); // ✅ ADD THIS
+    return events.filter((event) => event.date === dateStr);
   };
 
   // Get events for current week
@@ -304,50 +292,39 @@ export default function UserCalendar() {
 
   // Desktop View
   const renderMonthView = () => {
-    const firstDayOfMonth = new Date(
-      currentDate.getFullYear(),
-      currentDate.getMonth(),
-      1
-    );
-    const firstDayOfGrid = new Date(firstDayOfMonth);
-    firstDayOfGrid.setDate(firstDayOfGrid.getDate() - firstDayOfGrid.getDay());
+    // Custom day button component that shows events
+    const CustomDesktopDayButton = ({
+      className,
+      day,
+      modifiers,
+      ...props
+    }: React.ComponentProps<typeof DayButton>) => {
+      const defaultClassNames = getDefaultClassNames();
 
-    const days = [];
-    const currentGridDate = new Date(firstDayOfGrid);
+      const dayEvents = getEventsForDate(day.date);
+      const isToday = day.date.toDateString() === new Date().toDateString();
 
-    for (let i = 0; i < 35; i++) {
-      // 5 weeks * 7 days
-      const dayEvents = getEventsForDate(currentGridDate);
-      const isCurrentMonth =
-        currentGridDate.getMonth() === currentDate.getMonth();
-      const isToday =
-        currentGridDate.toDateString() === new Date().toDateString();
-      const isBottomLeft = i === 28; // Bottom-left corner (last row, first column)
-      const isBottomRight = i === 34; // Bottom-right corner (last row, last column)
-
-      days.push(
-        <div
-          key={currentGridDate.toISOString()}
-          className={`min-h-[120px] border p-2 ${
-            !isCurrentMonth
-              ? "bg-muted/20 text-muted-foreground"
-              : "bg-background"
-          } ${isToday ? "bg-primary/5 border-primary" : ""} ${
-            isBottomLeft
-              ? "rounded-bl-3xl"
-              : isBottomRight
-              ? "rounded-br-3xl"
-              : ""
-          }`}
+      return (
+        <button
+          data-day={day.date.toLocaleDateString()}
+          className={cn(
+            "relative w-full min-h-[120px] p-2 text-left flex flex-col border hover:bg-accent/50 transition-colors",
+            modifiers.outside && "text-muted-foreground bg-muted/20",
+            isToday && "bg-primary/5 border-primary",
+            defaultClassNames.day,
+            className
+          )}
+          {...props}
         >
           <div
-            className={`text-sm font-medium mb-1 ${
-              isToday ? "text-primary" : ""
-            }`}
+            className={cn(
+              "text-sm font-medium mb-1",
+              isToday && "text-primary"
+            )}
           >
-            {currentGridDate.getDate()}
+            {day.date.getDate()}
           </div>
-          <div className="space-y-1">
+          <div className="space-y-1 flex-1 overflow-hidden">
             {dayEvents.slice(0, 3).map((event) => (
               <div
                 key={event.class_id}
@@ -355,7 +332,10 @@ export default function UserCalendar() {
                 title={`${event.classname} - ${formatTime(event.time)} - ${
                   event.instructor
                 }`}
-                onClick={() => openClassModal(event)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openClassModal(event);
+                }}
               >
                 <div className="font-medium truncate">
                   {formatTime(event.time)} • {event.classname}
@@ -367,38 +347,44 @@ export default function UserCalendar() {
             ))}
             {dayEvents.length > 3 && (
               <button
-                className="text-xs text-muted-foreground hover:text-foreground hover:shadow-sm transition-all duration-150 rounded px-1 py-0.5 hover:bg-muted/50"
-                onClick={() =>
-                  openDayPopover(new Date(currentGridDate), dayEvents)
-                }
+                className="text-xs text-muted-foreground hover:text-foreground hover:shadow-sm transition-all duration-150 rounded px-1 py-0.5 hover:bg-muted/50 w-full text-left"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openDayPopover(new Date(day.date), dayEvents);
+                }}
               >
                 +{dayEvents.length - 3} more
               </button>
             )}
           </div>
-        </div>
+        </button>
       );
-      currentGridDate.setDate(currentGridDate.getDate() + 1);
-    }
+    };
 
     return (
-      <div className="grid grid-cols-7 gap-0 rounded-3xl">
-        {/* Day headers */}
-        {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day, index) => (
-          <div
-            key={day}
-            className={`p-2 text-center font-medium bg-muted border-b ${
-              index === 0
-                ? "rounded-tl-3xl"
-                : index === 6
-                ? "rounded-tr-3xl"
-                : ""
-            }`}
-          >
-            {day}
-          </div>
-        ))}
-        {days}
+      <div className="w-full">
+        <Calendar
+          mode="single"
+          selected={selectedDate}
+          onSelect={(date) => date && setSelectedDate(date)}
+          month={currentDate}
+          onMonthChange={setCurrentDate}
+          className="w-full border rounded-3xl p-4 [--cell-size:120px]"
+          classNames={{
+            months: "w-full",
+            month: "w-full space-y-4",
+            table: "w-full border-collapse",
+            head_row: "flex w-full",
+            head_cell:
+              "flex-1 text-center font-medium bg-muted rounded-t-lg p-2",
+            row: "flex w-full",
+            cell: "flex-1 p-0 relative",
+            day: "w-full h-full",
+          }}
+          components={{
+            DayButton: CustomDesktopDayButton,
+          }}
+        />
       </div>
     );
   };
@@ -490,7 +476,7 @@ export default function UserCalendar() {
         {dayEvents.length === 0 ? (
           <Card className="text-center py-12">
             <CardContent>
-              <Calendar className="mx-auto h-16 w-16 text-muted-foreground mb-4" />
+              <CalendarIcon className="mx-auto h-16 w-16 text-muted-foreground mb-4" />
               <h3 className="text-xl font-semibold mb-2">
                 No classes scheduled
               </h3>
@@ -570,9 +556,9 @@ export default function UserCalendar() {
 
           <div className="space-y-4">
             <div>
-              <Label className="bg-gray-400 text-white font-sans text-lg px-5 py-2 rounded-lg mx-0 text-left w-fit block">
+              <Badge variant="secondary" className="mb-3">
                 {selectedClass.studio_name}
-              </Label>
+              </Badge>
             </div>
 
             <div className="space-y-3">
@@ -583,7 +569,7 @@ export default function UserCalendar() {
               </div>
 
               <div className="flex items-center gap-3">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
+                <CalendarIcon className="h-4 w-4 text-muted-foreground" />
                 <span className="font-medium">Date:</span>
                 <span>{formatDate(selectedClass.date)}</span>
               </div>
@@ -730,50 +716,48 @@ export default function UserCalendar() {
         </div>
       </div>
 
-      {/* Navigation */}
-      <div className="flex items-center justify-between mb-6">
-        <Button
-          variant="outline"
-          onClick={() => {
-            if (viewType === "month") navigateMonth("prev");
-            else if (viewType === "week") navigateWeek("prev");
-            else navigateDay("prev");
-          }}
-        >
-          <ChevronLeft className="h-4 w-4" />
-        </Button>
+      {/* Navigation - Only show for week and day views (month view has built-in navigation) */}
+      {viewType !== "month" && (
+        <div className="flex items-center justify-between mb-6">
+          <Button
+            variant="outline"
+            onClick={() => {
+              if (viewType === "week") navigateWeek("prev");
+              else navigateDay("prev");
+            }}
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
 
-        <h2 className="text-xl font-semibold">
-          {viewType === "month" &&
-            currentDate.toLocaleDateString("en-US", {
-              month: "long",
-              year: "numeric",
-            })}
-          {viewType === "week" &&
-            `Week of ${currentDate.toLocaleDateString("en-US", {
-              month: "short",
-              day: "numeric",
-            })}`}
-          {viewType === "day" &&
-            currentDate.toLocaleDateString("en-US", {
-              weekday: "long",
-              month: "long",
-              day: "numeric",
-              year: "numeric",
-            })}
-        </h2>
+          <h2 className="text-xl font-semibold">
+            {viewType === "week" &&
+              `Week of ${currentDate.toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+              })}`}
+            {viewType === "day" &&
+              currentDate.toLocaleDateString("en-US", {
+                weekday: "long",
+                month: "long",
+                day: "numeric",
+                year: "numeric",
+              })}
+          </h2>
 
-        <Button
-          variant="outline"
-          onClick={() => {
-            if (viewType === "month") navigateMonth("next");
-            else if (viewType === "week") navigateWeek("next");
-            else navigateDay("next");
-          }}
-        >
-          <ChevronRight className="h-4 w-4" />
-        </Button>
-      </div>
+          <Button
+            variant="outline"
+            onClick={() => {
+              if (viewType === "week") navigateWeek("next");
+              else navigateDay("next");
+            }}
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
+
+      {/* Add spacing for month view */}
+      {viewType === "month" && <div className="mb-6" />}
 
       {/* Loading State */}
       {isLoading && (

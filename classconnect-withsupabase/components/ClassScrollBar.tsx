@@ -2,6 +2,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   Heart,
   CalendarPlus,
@@ -88,6 +89,8 @@ const ClassScrollBar: React.FC<ClassScrollBarProps> = ({
   const [userId, setUserId] = useState<string | null>(null);
   const [openRowId, setOpenRowId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     const supabase = createClient();
@@ -176,6 +179,10 @@ const ClassScrollBar: React.FC<ClassScrollBarProps> = ({
         await addClassToSchedule(userId, classId);
         toast.success(`${className} added to schedule`);
       }
+
+      queryClient.invalidateQueries({
+        queryKey: ["user_schedule", userId],
+      });
     } catch (error: unknown) {
       setScheduledClasses((prev) => ({ ...prev, [classId]: wasScheduled }));
       const errorMessage =
