@@ -1,0 +1,87 @@
+table schemas classconnectla
+
+
+CREATE TABLE public.class_scrape_presence (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  scrape_run_id uuid NOT NULL,
+  dance_class_id uuid NOT NULL,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT class_scrape_presence_pkey PRIMARY KEY (id),
+  CONSTRAINT class_scrape_presence_scrape_run_id_fkey FOREIGN KEY (scrape_run_id) REFERENCES public.scrape_runs(id),
+  CONSTRAINT class_scrape_presence_dance_class_id_fkey FOREIGN KEY (dance_class_id) REFERENCES public.dance_classes(id)
+);
+CREATE TABLE public.dance_classes (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  studio_id uuid NOT NULL,
+  class_name text NOT NULL,
+  instructor text NOT NULL,
+  price text,
+  length_minutes integer,
+  start_time_utc timestamp with time zone NOT NULL,
+  class_date date NOT NULL,
+  is_cancelled boolean NOT NULL DEFAULT false,
+  missing_once boolean NOT NULL DEFAULT false,
+  last_seen_at timestamp with time zone NOT NULL DEFAULT now(),
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT dance_classes_pkey PRIMARY KEY (id),
+  CONSTRAINT dance_classes_studio_id_fkey FOREIGN KEY (studio_id) REFERENCES public.studios(id)
+);
+CREATE TABLE public.deleted_classes_log (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  dance_class_id uuid NOT NULL,
+  studio_id uuid NOT NULL,
+  deleted_reason text NOT NULL,
+  deleted_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT deleted_classes_log_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.scrape_errors (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  scrape_run_id uuid,
+  studio_id uuid,
+  error_type text NOT NULL,
+  message text,
+  metadata jsonb,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT scrape_errors_pkey PRIMARY KEY (id),
+  CONSTRAINT scrape_errors_scrape_run_id_fkey FOREIGN KEY (scrape_run_id) REFERENCES public.scrape_runs(id),
+  CONSTRAINT scrape_errors_studio_id_fkey FOREIGN KEY (studio_id) REFERENCES public.studios(id)
+);
+CREATE TABLE public.scrape_runs (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  started_at timestamp with time zone NOT NULL DEFAULT now(),
+  finished_at timestamp with time zone,
+  success boolean,
+  error_summary text,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT scrape_runs_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.staging_classes (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  scrape_run_id uuid NOT NULL,
+  studio_id uuid NOT NULL,
+  external_id text,
+  class_name text NOT NULL,
+  instructor text,
+  price text,
+  start_time_utc timestamp with time zone NOT NULL,
+  duration_minutes integer,
+  class_date_utc date NOT NULL,
+  raw_payload jsonb,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT staging_classes_pkey PRIMARY KEY (id),
+  CONSTRAINT staging_classes_scrape_run_id_fkey FOREIGN KEY (scrape_run_id) REFERENCES public.scrape_runs(id),
+  CONSTRAINT staging_classes_studio_id_fkey FOREIGN KEY (studio_id) REFERENCES public.studios(id)
+);
+CREATE TABLE public.studios (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  name text NOT NULL,
+  base_url text,
+  platform text DEFAULT 'mindbody'::text,
+  status text NOT NULL DEFAULT 'ok'::text,
+  consecutive_failures integer NOT NULL DEFAULT 0,
+  last_successful_scrape timestamp with time zone,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT studios_pkey PRIMARY KEY (id)
+);
