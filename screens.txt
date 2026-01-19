@@ -1,0 +1,751 @@
+system scrape
+
+Home page: 
+
+Here’s the reverse-engineered spec from the provided web screenshot and code, for recreating in Flutter.
+Widget Tree (structure as shown)
+* Scaffold (light background)
+* Column
+* NavBar (top, desktop layout)
+* Container full-width, border-bottom
+* Row (desktop) / Column (mobile)
+* Left: brand text ClassConnectLA (Link to /)
+* Right: auth area → AuthButton (or EnvVarWarning placeholder)
+* Expanded
+* Center → Column (main content)
+* Text “ClassConnectLA” (large, bold)
+* Text “All your dance classes, all in one place.” (muted)
+* Row (wrap on small screens) with two buttons:
+* Learn More → Link /learn-more
+* Contact Us → Link /contact-us
+* SiteWideFooter
+* Contact email text
+* Copyright line
+* Links: Privacy Policy, Terms & Conditions
+* Small sparkle icon (decoration)
+Navigation Behavior
+* Brand text and heading area are static; brand in nav links to /.
+* Buttons:
+* Learn More → navigate to /learn-more
+* Contact Us → navigate to /contact-us
+* Auth button handles sign-in/out (per existing AuthButton component; not shown in screenshot).
+* (Per your note for Flutter mobile) place the nav actions in a bottom navigation bar, but keep labels/links identical to the web layout.
+State Requirements
+* Auth state for AuthButton (logged-in vs logged-out). No other page-local state.
+* Theme is light by default; no explicit toggle on this page.
+* No form/input state on this page.
+API Dependencies
+* None on this page beyond whatever AuthButton uses (auth/session provider).
+* No data fetch for the hero content; all strings are static.
+Reusable Components to Extract
+* TopNavBar (or BottomNavBar on mobile in Flutter) with:
+* Brand link
+* Auth button slot
+* HeroSection with title, subtitle, and CTA buttons
+* CTAButton (outline style)
+* SiteWideFooter with contact, legal links, and optional decorative icon
+Animations / Transitions
+* None implied in the screenshot or code. Standard navigation transitions only.
+Layout / Styling Notes
+* Centered hero, generous whitespace.
+* Outline buttons with rounded corners, medium padding, and light border.
+* Footer is minimal text-centric; small icon at far right.
+
+schedule screen:
+
+Reverse-engineered spec for the Schedule page.
+Widget tree (as shown)
+* Scaffold
+* AppBar (light gray background, no shadow)
+* Row: leading location pin icon + brand text “ClassConnectLA”
+* Trailing action icons: filter, calendar, search
+* Column (body)
+* Studio tab row (horizontal, pill buttons; one active)
+* Items: MDC, TMILLY, ML, PLAYGROUND, 88, THE SIX
+* Date carousel (horizontal, circular day pills)
+* Each pill: large day number; sublabel with weekday; active pill filled black with white text; others outlined
+* Expanded: ScrollView
+* List of ClassCards (separated by thin dividers, contained in rounded white card with light border)
+* Each item: left time; left duration row below; right class title; instructor name below; tiny green tick mark at right edge
+* Some items show swipe-revealed actions (per save screen): red “Save” with heart, green “Add to calendar” with calendar-plus
+* BottomNavigationBar (5 items, labels below icons)
+* Home, Schedule (active), Saved, Profile, More
+Navigation behavior
+* Bottom nav:
+* Home → /home (or root after auth)
+* Schedule (current) → /schedule
+* Saved → /saved (saved classes list)
+* Profile → /profile
+* More → overflow/settings/help (destination not shown; assume /more)
+* Top actions:
+* Filter icon → filter sheet/page for class filters
+* Calendar icon → calendar view or external calendar integration screen
+* Search icon → search entry for classes/instructors/studios
+* Studio tabs switch the studio context within the schedule (same page; refreshes list)
+* Date carousel changes the selected day in-place (no route change)
+* Swipe on a class reveals actions:
+* Save → adds to saved list
+* Add to calendar → triggers calendar add flow (likely system calendar intent)
+State requirements
+* Selected studio tab
+* Selected date
+* Class list data for current studio/date
+* Loading/error states for schedule fetch
+* Swipeable row state per ClassCard (revealed/closed)
+* Saved state per class (for heart/favorite)
+* Calendar add result (success/failure toast) if surfaced
+* Optional: filter/search query; debounce if search is available here (code shows debounced searchTerm)
+* Responsive: mobile layout vs desktop (code switches MobileLayout/DesktopLayout)
+API dependencies (implied)
+* Fetch studios list (or static config) for tabs
+* Fetch schedule for selected studio/date
+* Save/unsave class API
+* Add-to-calendar endpoint or local calendar intent (likely client-side action)
+* Auth/session for identifying user for saved items
+Reusable components to extract
+* TopBarWithActions (location pin + brand + action icons)
+* StudioTabBar (pill buttons with active state)
+* DateCarousel (circular day pills with weekday sublabels)
+* ClassCard
+* Time block (start time, duration)
+* Title and instructor
+* Right-edge accent (small green tick/chevron)
+* SwipeActions: Save (red, heart), Add to calendar (green, calendar-plus)
+* ScheduleList (list container with rounded card and internal dividers)
+* BottomNav (5 fixed items with icons + labels)
+Animations / transitions
+* Horizontal scroll for studio tabs and date carousel (standard scroll physics)
+* Swipe-to-reveal actions on ClassCard (horizontal slide)
+* Bottom nav uses standard tab switch transition (no custom animation implied)
+* No other visible animations in screenshot; assume default page transitions
+Notes for Flutter parity
+* Keep light gray app bar background; white content cards with light border and rounded corners.
+* Active date pill: solid black fill, white text; inactive: white fill, gray outline.
+* Studio tabs: light gray pills; active tab darkens/fills; text dark when active.
+* Maintain vertical scroll for the list; cards sit in a single rounded container with per-item dividers.
+
+Saved Screen:
+Here’s the reverse-engineered spec for the Saved/Bookmarks page.
+Widget Tree (mobile as shown)
+* Scaffold-like container (fixed height, safe-area insets)
+* TopBar (light gray) with leading location pin icon and brand text “ClassConnectLA”; no trailing actions
+* Scrollable content
+* PageHeader
+* Title: “My Saved Classes”
+* Subtitle: “You haven't saved any classes yet.” (empty state)
+* EmptyStateCard (rounded, light border)
+* Large outline heart icon
+* Title: “No saved classes yet”
+* Subtitle: “Start exploring classes and save your favorites to see them here.”
+* CTA button: “Browse Classes”
+* BottomNavigationBar (5 items, labels under icons)
+* Home, Schedules, Saved (active), Calendar, Profile
+When saved classes exist (from code)
+* Replace empty card with a grid/list of saved class cards (desktop grid; mobile wrapped by MobileLayoutSavedClasses)
+* Card contents: studio badge, class title, instructor, date, time/length, price; remove button (heart-off) in non-selection mode; selection checkboxes in selection mode
+* Optional bulk actions, search, studio filter, sort (desktop UX; mobile still uses same data but inside mobile layout wrapper)
+Navigation Behavior
+* Bottom nav routes:
+* Home → /
+* Schedules → /schedule
+* Saved → current /bookmarks
+* Calendar → calendar section/screen
+* Profile → profile section
+* Top brand tap → /
+* CTA “Browse Classes” → /schedule
+* Card actions (when list present):
+* Remove bookmark
+* (Per product goal) Save/Add to calendar actions should be available on class items similar to schedule swipe actions, though not shown in this empty-state screenshot.
+State Requirements
+* Authenticated user required (bookmarks are user-specific)
+* Data:
+* Saved classes list
+* Filtered subset (search/filter/sort)
+* Studio list for filters
+* UI state:
+* Loading indicator while fetching
+* Empty state when no saved classes
+* Selection mode (multi-select), selected item set, bulk remove state
+* Responsive mode: mobile vs desktop (code switches layouts)
+* Interaction state:
+* Remove action in-flight
+* Optional toast/feedback for add/remove
+API Dependencies (from code)
+* Supabase client:
+* Table bookmarks (fields: class_id, user_id, created_at)
+* Table danceClassStorage (full class details, includes studio name, date, time, length, price, instructor, class_id)
+* Helper: removeClassFromBookmarks(userId, classId)
+* Auth: supabase.auth.getUser() to resolve user id
+Reusable Components to Extract
+* MobileSavedLayout (header + scroll + bottom nav wrapper)MobileLayoutSavedClasses.tsxLines 28-40  <main className="flex flex-col w-full h-[100dvh] fixed inset-0 overflow-hidden ...">    <div className="flex items-center justify-between bg-gray-200 ...">      <Link href={"/"} className="flex items-center">        <MapPin ... />        <h1 className="text-xl font-bold">ClassConnectLA</h1>      </Link>    </div>    <div className="flex-1 overflow-y-auto">{children}</div>    <BottomNavBarMobile />  </main>
+* EmptySavedStateCard (heart icon, title, subtitle, CTA)page.tsxLines 295-305  {savedClasses.length === 0 ? (    <Card className="text-center py-12">      <CardContent>        <Heart className="mx-auto h-16 w-16 text-muted-foreground mb-4" />        <h3 className="text-xl font-semibold mb-2">No saved classes yet</h3>        <p className="text-muted-foreground mb-4">          Start exploring classes and save your favorites to see them here.        </p>        <Button asChild>          <Link href="/schedule">Browse Classes</Link>        </Button>      </CardContent>    </Card>  ) : (
+* SavedClassCard (when populated): studio badge, title, instructor, date, time/length, price, remove button; selection checkbox in selection mode.
+* SavedFiltersBar (search, studio filter dropdown, sort dropdown; desktop)
+* BulkActionsBar (selection mode toggles, select all, deselect all, bulk remove)
+* BottomNavBarMobile (shared across mobile authenticated pages)
+Animations / Transitions
+* Standard page navigation transitions
+* List/grid hover/transition on desktop (default CSS transition)
+* No custom animations shown for empty state; remove action likely immediate with toast feedback
+* Sticky header on mobile layout; scrolling content underneath
+Layout / Styling Notes
+* Light gray top bar; white content background
+* Large, bold page title; muted subtitle
+* Empty card uses ample padding, rounded corners, light border
+* CTA button uses primary fill (black in screenshot)
+* Bottom nav persistent; icons outlined style with labels
+Behavioral Parity Targets for Flutter
+* Maintain fixed header + scrollable body + persistent bottom nav
+* Empty state exactly as shown; populated state mirrors schedule-style class rows/cards and includes studio info
+* Provide remove bookmark and (per product goal) save/add-to-calendar actions on each saved class entry
+* Keep responsive concern: mobile layout dedicated; desktop can include filters/grid, but mobile uses the simple header + list pattern
+
+User Calendar:
+Here's the reverse-engineered spec for the User Calendar page.
+Widget Tree (mobile as shown)
+* Scaffold-like fixed container (safe-area insets)
+* TopBar (light gray)
+* Leading: location pin icon + brand text "ClassConnectLA"
+* Trailing: "{n} classes" count text (muted)
+* ScrollableContent
+* CalendarCard (rounded, white)
+* Month grid calendar (react-day-picker / table_calendar equivalent)
+* Day header row: Su, Mo, Tu, We, Th, Fr, Sa
+* 5–6 week rows; days outside current month shown muted
+* Selected day: filled black rounded square, white text
+* Days with events: small dot indicator below number
+* DayDetailSection
+* Row: selected date label | "Today" button | "{n} classes" label
+* If no events:
+* EmptyDayState: large calendar icon + "No classes scheduled for this day"
+* If events exist:
+* List of CalendarEventCards (per code):
+* Left colored accent bar
+* Studio badge (gray)
+* Class title
+* Instructor row (user icon)
+* Time row (clock icon, start–end)
+* Price (if present)
+* Remove button (trash icon, red)
+* BottomNavigationBar (5 items)
+* Home, Schedules, Saved, Calendar (active), Profile
+Desktop Widget Tree (from code)
+* Container with header, navigation, view selector
+* Header: "My Calendar" title, "{n} classes this month", Today button, view dropdown (Month/Week/Day)
+* Navigation row: prev arrow, current period label, next arrow
+* View content:
+* Month: 7-column grid, 5 weeks; each cell shows date + up to 3 event chips; "+N more" overflow link
+* Week: 7-column layout with day cards stacked vertically per day
+* Day: single column list of class cards
+* Modals:
+* Class detail dialog (title, studio, instructor, date, time, duration, price, Share, Remove actions)
+* Day popover (list of all events for a day when clicking "+N more")
+Navigation Behavior
+* Bottom nav routes (mobile):
+* Home → /
+* Schedules → /schedule
+* Saved → /bookmarks
+* Calendar → current /user-calendar
+* Profile → /profile
+* Top brand tap → /
+* "Today" button → resets calendar to today's date
+* Month navigation: arrows (desktop) or swipe/month change (mobile via react-day-picker)
+* Desktop view toggle: Month / Week / Day
+* Desktop event chip tap → opens class detail modal
+* Desktop "+N more" → opens day popover
+* Mobile event card remove button → removes from schedule
+State Requirements
+* Auth: userId (calendar entries are user-specific)
+* currentDate: the month/week/day being viewed
+* selectedDate: the specific day selected (mobile always, desktop day view)
+* viewType: "month" | "week" | "day" (desktop only; mobile is month only currently)
+* events: list of scheduled classes for the current month (fetched via useMonthEvents)
+* selectedDateEvents: filtered subset for the selected day
+* datesWithEvents: set of date strings for dot indicators
+* isLoading, error: fetch states
+* isMobile: responsive breakpoint flag
+* Desktop modal state:
+* isModalOpen, selectedClass
+* isDayPopoverOpen, selectedDayEvents, selectedPopoverDate
+API Dependencies
+* Supabase client
+* Table user_schedule (fields: user_id, class_id, created_at)
+* Table danceClassStorage (full class details: class_id, classname, instructor, studio_name, date, time, length, price)
+* Hook: useMonthEvents(userId, currentDate) → fetches events for the displayed month
+* Helper: getEndTime(startTime, lengthStr) → computes end time
+* Delete: supabase.from("user_schedule").delete().eq("user_id", ...).eq("class_id", ...)
+* Query invalidation: React Query invalidateQueries on mutation
+Reusable Components to Extract
+* MobileCalendarLayout (fixed header + scrollable body + bottom nav)
+* MonthCalendarGrid (7-col grid, day cells, event dots, selected state)
+* DayDetailHeader (date label, Today button, class count)
+* EmptyDayState (calendar icon + message)
+* CalendarEventCard (accent bar, studio badge, title, instructor, time, price, remove button)
+* ClassDetailModal (dialog with full class info, Share, Remove actions)
+* DayPopover (dialog listing all events for overflow day)
+* BottomNavBarMobile (shared across authenticated mobile pages)
+* Desktop:
+* CalendarHeader (title, class count, Today button, view selector)
+* CalendarNavigation (prev/next arrows, period label)
+* MonthViewGrid, WeekViewGrid, DayViewList
+Animations / Transitions
+* Month swipe/change animation (standard calendar component behavior)
+* Selected day highlight (instant fill transition)
+* Modal open/close (default dialog animation)
+* Loading spinner overlay while fetching
+* Remove action: immediate list update with toast feedback
+* No other custom animations implied
+Layout / Styling Notes
+* Light gray top bar; white calendar card with rounded corners
+* Calendar grid: evenly spaced columns; outside-month days muted
+* Selected day: solid black fill, white text, rounded square
+* Event dot: small primary-color circle below day number
+* Day detail section below calendar; scrollable if many events
+* Event cards: left accent bar (primary color), gray studio badge, muted metadata text
+* Remove button: ghost style, red icon
+* Bottom nav: outlined icons, labels below, active state filled
+Behavioral Parity Targets for Flutter
+* Maintain fixed header + scrollable body + persistent bottom nav
+* Month calendar with day selection, event dot indicators
+* Day detail below calendar with event list or empty state
+* "Today" button resets to current date
+* (Per user goal) Add week and day views for mobile parity with desktop
+* Remove event action with optimistic UI update and toast
+
+Sign-In Page:
+Here's the reverse-engineered spec for the Login page.
+Widget Tree
+* Scaffold (muted/gray background)
+* SafeArea
+* Center
+* Column (centered, max-width constrained ~sm)
+* BrandHeader (row/link)
+* Icon: gallery/stack icon (filled square with rounded corners)
+* Text: "ClassConnectLA" (medium weight)
+* LoginCard (white, rounded corners, shadow)
+* CardHeader (centered)
+* Title: "Welcome back" (xl, bold)
+* Subtitle: "Login to your account" (muted)
+* CardContent
+* Form
+* Email field group:
+* Label: "Email"
+* TextField (placeholder: "m@example.com", email type)
+* Password field group:
+* Row: Label "Password" | Link "Forgot your password?"
+* TextField (password, obscured)
+* Error text (red, if present)
+* PrimaryButton "Login" (full width, black fill, white text)
+* Text row: "Don't have an account?" + Link "Sign up"
+* LegalDisclaimer (muted, xs, centered)
+* "By clicking login, you agree to our Terms of Service and Privacy Policy."
+* Inline links for Terms of Service and Privacy Policy
+Navigation Behavior
+* Pre-check: If user already has a session, auto-redirect to /schedule
+* Brand header tap → / (home)
+* "Forgot your password?" → /forgot-password
+* "Sign up" link → /sign-up
+* "Terms of Service" → /terms
+* "Privacy Policy" → /privacy
+* On successful login → /schedule (with router refresh)
+State Requirements
+* email: string (text field value)
+* password: string (text field value)
+* loading: bool (disables inputs, shows "Logging in..." on button)
+* error: string | null (displays error message below password field)
+API Dependencies
+* Supabase client
+* supabase.auth.getSession() – check existing session (server-side redirect)
+* supabase.auth.signInWithPassword({ email, password }) – perform login
+* On success: verify session exists via getSession(), then navigate
+Reusable Components to Extract
+* BrandHeader (icon + brand text, tappable link to home)
+* AuthCard (white rounded card container for auth forms)
+* LabeledTextField (label above input, optional trailing link for password)
+* PrimaryButton (full-width, black fill, loading state support)
+* LegalDisclaimer (muted small text with inline links)
+* AuthFormLayout (muted background, centered card, brand header, disclaimer)
+Animations / Transitions
+* None implied in screenshot or code
+* Standard page transition when navigating to /schedule
+* Button loading state changes text ("Login" → "Logging in...")
+* Error text appears inline below password field (no animation specified)
+Layout / Styling Notes
+* Background: muted gray (light gray/off-white)
+* Card: white, rounded corners, subtle shadow
+* Brand icon: small square with rounded corners, primary fill, white icon
+* Form fields: rounded borders, full width
+* Login button: full width, black fill, white text, rounded
+* Links: underlined on hover (web); should be tappable text in Flutter
+* Error text: red, small, appears below password input
+* Legal text: very small, muted, centered below card
+Form Validation Behavior
+* Email and password are both required
+* Inputs disabled while loading is true
+* Error message displayed if login fails (e.g., wrong credentials)
+Session Flow
+1. Page loads → server checks session
+2. If session exists → redirect to /schedule (never renders form)
+3. If no session → render login form
+4. User submits → loading = true, call signInWithPassword
+5. On error → display error message, loading = false
+6. On success → verify session, navigate to /schedule, refresh router
+
+Sign-up/sign up success page:
+Here's the reverse-engineered spec for the Sign Up page and Sign Up Success page.
+
+Sign Up Page
+Widget Tree
+* Scaffold (white/light background implied)
+* SafeArea
+* Center
+* Column (max-width constrained ~sm)
+* SignUpCard (white, rounded corners)
+* CardHeader (left-aligned)
+* Title: "Sign up" (2xl, bold)
+* Subtitle: "Create a new account" (muted)
+* CardContent
+* Form
+* Full Name field:
+* Label: "Full Name"
+* TextField (placeholder: "John Doe", required)
+* Email field:
+* Label: "Email"
+* TextField (placeholder: "m@example.com", email type, required)
+* Phone Number field:
+* Label: "Phone Number"
+* PhoneInput (country picker with flag, default US, placeholder: "Optional")
+* Password field:
+* Label: "Password"
+* TextField (password, obscured, required)
+* Repeat Password field:
+* Label: "Repeat Password"
+* TextField (password, obscured, required)
+* Error text (red, if present)
+* PrimaryButton "Sign up" (full width, black fill)
+* Text row: "Already have an account?" + Link "Login"
+* LegalDisclaimer (muted, xs, centered)
+* "By clicking sign up, you agree to our Terms of Service and Privacy Policy."
+Navigation Behavior
+* "Login" link → /login
+* "Terms of Service" → /terms
+* "Privacy Policy" → /privacy
+* On successful sign up → /sign-up-success
+State Requirements
+* fullName: string
+* email: string
+* phoneNumber: string | undefined (optional)
+* password: string
+* repeatPassword: string
+* error: string | null
+* isLoading: bool
+Validation Logic
+* Password must match Repeat Password (client-side check before API call)
+* Phone number validation via isValidPhoneNumber() (optional field)
+* Email and password are required
+API Dependencies
+* Supabase client
+* supabase.auth.signUp({ email, password, options: { emailRedirectTo } })
+* supabase.auth.updateUser({ data: { display_name }, phone }) – sets full name and phone after signup
+Reusable Components
+* AuthCard (white rounded card for auth forms)
+* LabeledTextField (label above input)
+* PhoneInputField (country picker + phone number input)
+* PrimaryButton (full-width, loading state support)
+* LegalDisclaimer (muted small text with inline links)
+Animations / Transitions
+* None implied in screenshot
+* Button loading state: text changes to "Creating an account..."
+
+Sign Up Success Page
+Widget Tree
+* Scaffold (gradient background: primary/secondary tints)
+* SafeArea
+* Center
+* Column (max-width ~md)
+* SuccessCard (no border, shadow, backdrop blur)
+* CardHeader (centered)
+* Green circle with checkmark icon
+* Title: "Welcome to ClassConnectLA!" (2xl, bold)
+* Subtitle: "Account created successfully"
+* CardContent (centered)
+* Text: "You're all set! Please check your email to confirm your account."
+* Countdown section:
+* Row: spinner icon + "Redirecting to schedule in {n} seconds..."
+* Progress bar (animates as countdown decreases)
+* PrimaryButton "Skip and go to schedule now" with right arrow icon
+* Helper text: "Click above to skip the wait and start exploring classes" (italic, muted)
+Navigation Behavior
+* Auto-redirect to /schedule after 4-second countdown
+* "Skip" button → immediate navigation to /schedule
+State Requirements
+* countdown: number (starts at 4, decrements every second)
+* Timer cleanup on unmount
+Countdown Logic
+1. Initialize countdown = 4
+2. setInterval every 1000ms: decrement countdown
+3. When countdown reaches 0: clearInterval, navigate to /schedule
+4. Button click: immediately navigate to /schedule
+API Dependencies
+* None on this page (post-signup, session already created)
+Reusable Components
+* SuccessCard (no border, shadow, blur backdrop)
+* CircleIcon (colored circle with icon inside)
+* CountdownProgress (text + animated progress bar)
+* PrimaryButton with trailing icon
+Animations / Transitions
+* Spinner icon: rotating animation (animate-spin)
+* Progress bar: width transition (transition-all duration-1000 ease-out)
+* Button arrow: translate-x on hover (group-hover:translate-x-1)
+
+Layout / Styling Notes (Both Pages)
+Sign Up Page:
+* Simple centered layout, white background (or muted implied)
+* Card has standard rounded corners and shadow
+* Phone input has country flag picker with dropdown chevron
+Success Page:
+* Gradient background: from-primary/5 via-background to-secondary/5
+* Card: border-none shadow-xl bg-card/95 backdrop-blur-sm
+* Green circle: bg-green-100 dark:bg-green-900/20
+* Checkmark icon: text-green-600
+* Progress bar: secondary background, primary fill
+
+forgot password page:
+Here's the reverse-engineered spec for the Forgot Password page.
+
+Forgot Password Page
+Widget Tree
+Initial State (Form):
+* Scaffold (white/light background implied)
+* SafeArea
+* Center
+* Column (max-width constrained ~sm)
+* ForgotPasswordCard (white, rounded corners)
+* CardHeader (left-aligned)
+* Title: "Reset Your Password" (2xl, bold)
+* Subtitle: "Type in your email and we'll send you a link to reset your password" (muted)
+* CardContent
+* Form
+* Email field:
+* Label: "Email"
+* TextField (placeholder: "m@example.com", email type, required)
+* Error text (red, if present)
+* PrimaryButton "Send reset email" (full width, black fill)
+* Text row: "Already have an account?" + Link "Login"
+* CardContent (navigation buttons, centered)
+* Row:
+* OutlineButton "Home"
+* OutlineButton "Login"
+Success State:
+* Scaffold
+* SafeArea
+* Center
+* Column (max-width ~sm)
+* SuccessCard (white, rounded corners)
+* CardHeader
+* Title: "Check Your Email" (2xl, bold)
+* Subtitle: "Password reset instructions sent"
+* CardContent
+* Text: "If you registered using your email and password, you will receive a password reset email." (muted)
+* CardContent (navigation buttons, centered)
+* Row:
+* OutlineButton "Home"
+* OutlineButton "Login"
+Navigation Behavior
+* "Login" link (text) → /login
+* "Login" button (outline) → /login
+* "Home" button → / (home page)
+* On successful email send → switches to success state (same page, no navigation)
+* Reset email contains link to /callback?next=/update-password
+State Requirements
+* email: string
+* error: string | null
+* success: bool (toggles between form view and success view)
+* isLoading: bool
+State Flow
+1. Initial: success = false, show form
+2. User enters email, submits
+3. isLoading = true, button shows "Sending..."
+4. On API success: success = true, render success card
+5. On API error: error = errorMessage, stay on form
+API Dependencies
+* Supabase client
+* supabase.auth.resetPasswordForEmail(email, { redirectTo }) – sends reset email
+* redirectTo: ${origin}/callback?next=/update-password
+Reusable Components
+* AuthCard (white rounded card for auth forms)
+* LabeledTextField (label above input)
+* PrimaryButton (full-width, loading state support)
+* OutlineButton (bordered button, used for secondary actions)
+* NavigationButtonRow (centered row with Home/Login buttons)
+Animations / Transitions
+* None implied in screenshot or code
+* Button loading state: text changes to "Sending..."
+* State switch between form and success is immediate (no animation)
+Layout / Styling Notes
+* Centered layout, light background
+* Card has standard rounded corners
+* Form state has two CardContent sections: one for form, one for nav buttons
+* Success state has two CardContent sections: one for message, one for nav buttons
+* Navigation buttons are outline variant, side-by-side with gap
+* "Already have an account? Login" appears only in form state
+
+update-password page:
+Here's the reverse-engineered spec for the Update Password page (based on code analysis, no screenshot provided).
+
+Update Password Page
+Widget Tree
+* Scaffold (white/light background implied)
+* SafeArea
+* Center
+* Column (max-width constrained ~sm)
+* UpdatePasswordCard (white, rounded corners)
+* CardHeader (left-aligned)
+* Title: "Reset Your Password" (2xl, bold)
+* Subtitle: "Please enter your new password below." (muted)
+* CardContent
+* Form
+* Password field:
+* Label: "New password"
+* TextField (placeholder: "New password", password type, obscured, required)
+* Error text (red, if present)
+* PrimaryButton "Save new password" (full width, black fill)
+Navigation Behavior
+* Entry point: User arrives via reset email link → /callback?next=/update-password
+* User has an active session from the magic link/token exchange
+* On successful password update → /schedule
+* No other navigation links on this page
+State Requirements
+* password: string
+* error: string | null
+* isLoading: bool
+State Flow
+1. User lands on page (already authenticated via callback token exchange)
+2. User enters new password
+3. Submit: isLoading = true, button shows "Saving..."
+4. On API success: navigate to /schedule
+5. On API error: error = errorMessage, stay on page
+API Dependencies
+* Supabase client
+* supabase.auth.updateUser({ password }) – updates the user's password
+* Assumes active session exists from the callback flow
+Reusable Components
+* AuthCard (white rounded card for auth forms)
+* LabeledTextField (label above input)
+* PrimaryButton (full-width, loading state support)
+Animations / Transitions
+* None implied in code
+* Button loading state: text changes from "Save new password" to "Saving..."
+* Standard page transition on success navigation
+Layout / Styling Notes
+* Centered layout, light background
+* Card has standard rounded corners
+* Minimal form: single password field + submit button
+* No navigation links (Home, Login, etc.) – user is expected to proceed to schedule on success
+* Error displayed inline below password field
+Authentication Context
+* This page requires an active session (user arrives via authenticated callback)
+* The password reset token exchange happens in /callback before redirecting here
+* After successful update, user continues with their existing session to /schedule
+
+profile screen:
+Here's the reverse-engineered spec for the Profile Settings page.
+
+Profile Settings Page
+Widget Tree
+* Scaffold (white/light background)
+* SafeArea
+* ScrollView (max-width ~2xl centered, padding)
+* Column (vertical spacing)
+* ProfileSettingsCard (white, rounded corners)
+* CardHeader
+* Title: "Profile Settings" (bold)
+* CardContent (vertical spacing)
+* Name field:
+* Label: "Name"
+* TextField (prefilled with current name)
+* Email field:
+* Label: "Email"
+* TextField (prefilled with current email, email type)
+* Phone field:
+* Label: "Phone"
+* PhoneInput (country picker with flag, prefilled)
+* Password section:
+* Label: "Password"
+* OutlineButton "Change Password" (not full width, w-fit)
+* Error text (red, if present)
+* PrimaryButton "Save Changes" (full width, black fill)
+* DangerZoneCard (white, rounded corners)
+* CardHeader
+* Title: "Danger Zone" (red text)
+* CardContent (vertical spacing)
+* Warning text: "Deleting your account is permanent and cannot be undone." (muted)
+* DestructiveButton "Delete Account" (full width, red fill)
+* (Mobile only) BottomNavBarMobile
+Navigation Behavior
+* "Change Password" button → triggers password reset email flow (sends email, shows toast)
+* Email contains link to /callback?next=/update-password
+* "Delete Account" → confirmation dialog → on confirm: delete account → sign out → redirect to /
+* No explicit navigation links; uses bottom nav on mobile
+State Requirements
+* name: string (current input value)
+* email: string (current input value)
+* phoneNumber: string (current input value)
+* oldName, oldEmail, oldPhone: strings (original values for change detection)
+* phoneCountry: string (parsed country code)
+* error: string | null
+* success: bool
+* isLoading: bool
+* isMobile: bool (responsive flag)
+Data Loading
+1. On mount: fetch user via supabase.auth.getUser()
+2. Extract from user.user_metadata: display_name, phone_number
+3. Extract from user: email
+4. Parse phone number to get country code
+5. Set both current and old values
+Change Detection Logic
+* Compare current values to old values
+* Only include changed fields in update payload
+* If no changes: show "No changes to update" toast
+API Dependencies
+* Supabase client
+* supabase.auth.getUser() – fetch current user data
+* supabase.auth.updateUser({ email?, data?: { display_name?, phone_number? } }) – update profile
+* supabase.auth.resetPasswordForEmail(email, { redirectTo }) – send password reset email
+* supabase.auth.signOut() – sign out after account deletion
+* Custom API: DELETE /api/users/deleteAccount with { userId } body – delete user account
+Delete Account Flow
+1. Show confirmation dialog with warning message
+2. If confirmed: get user ID
+3. Call /api/users/deleteAccount API
+4. On success: sign out, redirect to /
+5. On error: show error toast
+Reusable Components
+* SettingsCard (white rounded card with header and content)
+* LabeledTextField (label above input)
+* PhoneInputField (country picker + phone number input)
+* OutlineButton (bordered button for secondary actions)
+* PrimaryButton (full-width, black fill)
+* DestructiveButton (full-width, red fill for dangerous actions)
+* BottomNavBarMobile (mobile navigation)
+Animations / Transitions
+* None implied in screenshot or code
+* Loading state on delete: button shows "Deleting Account..."
+* Toast notifications for success/error feedback
+Layout / Styling Notes
+* Centered container with max-width (2xl / ~672px)
+* Two separate cards with vertical gap
+* Profile card: standard header + form fields + save button
+* Danger Zone card: red title, warning text, full-width destructive button
+* Phone input includes country flag picker (default US)
+* "Change Password" button is outline variant, not full width (w-fit)
+* Mobile: includes bottom navigation bar
+Toast Notifications
+* "No changes to update" – when save clicked with no changes
+* "Profile updated successfully!" – on successful save (includes email confirmation note if email changed)
+* "Check your email, password reset instructions sent" – on password reset request
+* "Account deleted successfully" – on successful deletion
+* Error toasts for any failures
+
+
+
