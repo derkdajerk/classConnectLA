@@ -1,0 +1,1149 @@
+================================================================================
+FLUTTER MIGRATION EXTRACTION DOCUMENT
+================================================================================
+Steps 2-6 of the extraction pipeline for ClassConnectLA Flutter migration.
+This document supplements screens.txt which contains Step 1 (screen extractions).
+
+================================================================================
+STEP 2: APP SHELL EXTRACTION
+================================================================================
+
+A. BOTTOM NAVIGATION BAR (Mobile)
+---------------------------------
+
+Structure:
+* Fixed sticky bar at bottom of screen
+* White background (light mode) / Gray-950 (dark mode)
+* Border-top separator (gray-200 light / gray-800 dark)
+* Safe area inset padding for iOS notch: pb-[env(safe-area-inset-bottom)]
+
+Tabs (5 items, left to right):
+1. Home
+   - Icon: Home (lucide-react)
+   - Label: "Home"
+   - Route: /
+   
+2. Schedules
+   - Icon: Calendar (lucide-react)
+   - Label: "Schedules"
+   - Route: /schedule
+   
+3. Saved
+   - Icon: Bookmark (lucide-react)
+   - Label: "Saved"
+   - Route: /bookmarks
+   
+4. Calendar
+   - Icon: CalendarDays (lucide-react)
+   - Label: "Calendar"
+   - Route: /user-calendar
+   
+5. Profile
+   - Icon: User (lucide-react)
+   - Label: "Profile"
+   - Route: /profile
+
+Active State:
+* Text color changes to primary (--primary)
+* Icon and label both get active styling
+* Detection via pathname matching: isActive(path) => pathname === path
+
+Layout:
+* Flex container with justify-around
+* Each tab: flex-col items-center justify-center p-2
+* Icon: h-5 w-5 (20px x 20px)
+* Label: text-xs mt-1 (12px, 4px top margin)
+
+B. MOBILE HEADER BAR
+--------------------
+
+Structure:
+* Fixed sticky header at top of screen
+* Light gray background (bg-gray-200 light / bg-gray-950 dark)
+* Safe area inset padding: pt-[env(safe-area-inset-top)]
+* z-index: 50
+* px-4 py-3 (16px horizontal, 12px vertical padding)
+
+Left Section:
+* Brand logo area (Link to /)
+* MapPin icon (h-6 w-6, mr-2)
+* Brand text: "ClassConnectLA" (text-xl font-bold)
+
+Right Section (varies by page):
+* Schedule page: Filter button, Calendar button, Search button
+* Saved page: No trailing actions
+* Calendar page: Class count text "{n} classes"
+* Profile page: No trailing actions
+
+Header Actions (Schedule page):
+1. Time Filter (SlidersHorizontal icon)
+   - Opens Sheet from top
+   - Contains MobileTimeSelector component
+   - Shows green Clock indicator when filter active
+   
+2. Calendar (CalendarDaysIcon)
+   - Opens Sheet from top (65vh height)
+   - Contains Calendar08 month picker
+   - Transparent background, no border
+   
+3. Search (Search icon)
+   - Opens Sheet from top
+   - Contains Input field with clear button
+   - Placeholder: "Search Teachers/Classes/Styles"
+
+C. MOBILE LAYOUT SHELL
+----------------------
+
+Structure:
+* Full-screen fixed container: h-[100dvh] fixed inset-0
+* Flex column layout
+* Safe area insets: pb-[env(safe-area-inset-bottom)] pt-[env(safe-area-inset-top)]
+
+Sections (top to bottom):
+1. Header (sticky top, z-50)
+2. Sub-navigation (studio tabs, date carousel) - varies by page
+3. Content area (flex-1 overflow-y-auto)
+4. Bottom navigation (sticky bottom)
+
+D. DEFAULT ROUTE & TAB BEHAVIOR
+-------------------------------
+
+Default Tab: Schedule (/schedule)
+* When user logs in, redirect to /schedule (not marketing home)
+* Schedule is the "home" of the authenticated app
+
+Tab Behavior:
+* Each tab is a separate route
+* No nested navigation within tabs (shallow routing)
+* Back navigation returns to previous tab
+* State is preserved per-tab (React Query caching)
+
+Entry Points:
+* Unauthenticated: / (marketing home)
+* Authenticated: /schedule (schedule feed)
+* Post-login: /schedule
+* Post-signup: /sign-up-success → /schedule (after countdown)
+
+E. FLUTTER NAVIGATION MAP
+-------------------------
+
+Auth Flow:
+  /login ─────────────────────→ /schedule (on success)
+    │
+    ├─→ /sign-up ─────────────→ /sign-up-success ──→ /schedule (4s countdown)
+    │
+    └─→ /forgot-password ─────→ (success state, same page)
+                                   │
+                                   ↓ (email link)
+                               /callback?next=/update-password
+                                   │
+                                   ↓
+                               /update-password ──→ /schedule
+
+App Shell (Bottom Nav):
+  ┌─────────────────────────────────────────────────────────────┐
+  │                                                             │
+  │   Home (/)  │  Schedule  │  Saved  │  Calendar  │  Profile  │
+  │             │  /schedule │/bookmarks│/user-cal  │  /profile │
+  │             │  (default) │          │           │           │
+  └─────────────────────────────────────────────────────────────┘
+
+================================================================================
+STEP 3: EMPTY/LOADING/ERROR STATES EXTRACTION
+================================================================================
+
+A. SCHEDULE PAGE STATES
+-----------------------
+
+Loading State:
+* Linear progress bar (Progress component, h-1 = 4px height)
+* Displayed below date carousel, above content
+* Progress animates from 0 to 90 during fetch, then 100 on complete
+* Interval-based animation: increments by 10 every 4ms until 90%
+
+Empty State (No classes found):
+* Displayed inline within ClassScrollBar list
+* Placeholder class card with:
+  - class_id: "0"
+  - classname: "No classes found." (or "No matches found" for search)
+  - instructor: "Try a different date." (or "Try different search terms")
+  - length: "N/A"
+  - time: "00:00:00"
+  - price: 0
+* Styled same as regular class card but non-interactive
+
+Error State:
+* Same inline placeholder approach:
+  - classname: "Error loading classes."
+  - instructor: "Try again later."
+* Console error logging
+* No modal/toast for fetch errors
+
+No Studio Selected State:
+* Centered text: "Select a studio to view classes"
+* py-8 padding (32px), text-gray-500
+
+B. BOOKMARKS PAGE STATES
+------------------------
+
+Loading State:
+* Full-page centered spinner
+* Container: min-h-[400px]
+* Spinner: animate-spin rounded-full h-12 w-12 border-b-2 border-primary
+* Text: "Loading your saved classes..." (text-muted-foreground)
+
+Empty State (No saved classes):
+* Card component with centered content (py-12 = 48px)
+* Heart icon: h-16 w-16 (64px) text-muted-foreground mb-4
+* Title: "No saved classes yet" (text-xl font-semibold mb-2)
+* Subtitle: "Start exploring classes and save your favorites to see them here." (text-muted-foreground mb-4)
+* CTA Button: "Browse Classes" → Link to /schedule
+
+No Search Results State:
+* Card with centered content (py-8 = 32px)
+* Search icon: h-12 w-12 (48px) text-muted-foreground mb-4
+* Title: "No classes found" (text-lg font-semibold mb-2)
+* Subtitle: "Try adjusting your search or filters to find classes." (text-muted-foreground)
+
+Error State:
+* Toast notification: "Failed to load your saved classes"
+* Console error logging
+* Sets savedClasses to empty array (shows empty state)
+
+C. USER CALENDAR PAGE STATES
+----------------------------
+
+Loading State (Mobile):
+* Full-screen overlay: fixed inset-0 bg-background/80 backdrop-blur-sm z-50
+* Centered spinner with text
+* Spinner: animate-spin rounded-full h-12 w-12 border-b-2 border-primary
+* Text: "Loading your calendar..."
+
+Loading State (Desktop):
+* Inline centered loading (py-12 = 48px)
+* Same spinner and text pattern
+
+Empty Day State (No classes for selected day):
+* Card with centered content (py-12 = 48px)
+* Calendar icon: h-16 w-16 (64px) text-muted-foreground mb-4
+* Title: "No classes scheduled" (text-xl font-semibold mb-2)
+* Subtitle: "You don't have any classes scheduled for this day."
+
+Error State:
+* Card with destructive border: border-destructive
+* Centered text: "Failed to load calendar events" (text-destructive)
+* React Query handles retry logic
+
+D. FLUTTER STATE WIDGET PATTERNS
+--------------------------------
+
+Loading Widget Pattern:
+```dart
+class LoadingSpinner extends StatelessWidget {
+  final String? message;
+  
+  Widget build(context) => Center(
+    child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        CircularProgressIndicator(strokeWidth: 2),
+        if (message != null) ...[
+          SizedBox(height: 16),
+          Text(message!, style: TextStyle(color: Colors.grey[600])),
+        ],
+      ],
+    ),
+  );
+}
+```
+
+Empty State Widget Pattern:
+```dart
+class EmptyState extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final String? ctaText;
+  final VoidCallback? onCtaPressed;
+  
+  Widget build(context) => Card(
+    child: Padding(
+      padding: EdgeInsets.symmetric(vertical: 48),
+      child: Column(
+        children: [
+          Icon(icon, size: 64, color: Colors.grey[400]),
+          SizedBox(height: 16),
+          Text(title, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
+          SizedBox(height: 8),
+          Text(subtitle, style: TextStyle(color: Colors.grey[600])),
+          if (ctaText != null) ...[
+            SizedBox(height: 16),
+            ElevatedButton(onPressed: onCtaPressed, child: Text(ctaText!)),
+          ],
+        ],
+      ),
+    ),
+  );
+}
+```
+
+================================================================================
+STEP 4: COMPONENT INVENTORY
+================================================================================
+
+A. NAVIGATION COMPONENTS
+-------------------------
+
+1. BottomNavBarMobile
+   - Props: none (reads pathname internally)
+   - Purpose: Bottom navigation for authenticated mobile app
+   - Variants: Active/inactive tab states
+   - Icons: Home, Calendar, Bookmark, CalendarDays, User
+   - Flutter: BottomNavigationBar with 5 items
+
+2. MobileHeaderNav
+   - Props:
+     * searchTerm: string
+     * setSearchTerm: (term: string) => void
+     * timeRange: { start: string, end: string }
+     * onTimeChange: (range: TimeRange) => void
+     * selectedDate: Date
+     * onCalendarDateSelect: (date: Date | undefined) => void
+     * getDisabledDates: () => { before: Date }
+     * calendarOpen: boolean
+     * setCalendarOpen: (open: boolean) => void
+     * title?: string (default: "ClassConnectLA")
+     * showSearch?: boolean (default: true)
+     * showTimeFilter?: boolean (default: true)
+     * showCalendar?: boolean (default: true)
+   - Purpose: Reusable header with optional action buttons
+   - Flutter: AppBar or PreferredSizeWidget
+
+B. LAYOUT COMPONENTS
+--------------------
+
+3. MobileLayout
+   - Props:
+     * searchTerm: string
+     * setSearchTerm: React.Dispatch<React.SetStateAction<string>>
+     * debouncedSearchTerm: string
+   - Purpose: Full mobile schedule layout with all sub-components
+   - Contains: Header, studio tabs, date carousel, class list, bottom nav
+   - Flutter: Scaffold with nested Column
+
+4. MobileLayoutSavedClasses
+   - Props:
+     * children: React.ReactNode
+   - Purpose: Simple mobile shell for bookmarks page
+   - Contains: Header (no actions), scrollable content, bottom nav
+   - Flutter: Scaffold shell
+
+5. DesktopLayout
+   - Props:
+     * searchTerm: string
+     * setSearchTerm: React.Dispatch<React.SetStateAction<string>>
+     * debouncedSearchTerm: string
+   - Purpose: Desktop schedule layout wrapper
+   - Contains: Search component, AllPageContent
+   - Flutter: N/A (mobile-only for now)
+
+C. CLASS/DATA DISPLAY COMPONENTS
+--------------------------------
+
+6. ClassScrollBar
+   - Props:
+     * studioName: string
+     * danceClassList: DanceClass[]
+     * isSearchTerm: boolean
+     * isMobile?: boolean (default: false)
+   - Purpose: Scrollable list of class cards
+   - Variants: Mobile (swipe actions) vs Desktop (dropdown menu)
+   - Sub-components: SwipeRow (mobile only)
+   - Flutter: ListView.builder with Dismissible or flutter_slidable
+
+7. ClassCard (embedded in ClassScrollBar)
+   - Layout:
+     * Top row: Time (left), Class name (right)
+     * Bottom row: Duration (left), [Date if searching] (center), Instructor (right)
+   - Swipe actions (mobile): Save/Unsave, Add to calendar
+   - Click actions (desktop): Dropdown with same options
+   - Flutter: Custom ListTile or Container
+
+8. SavedClassCard (in bookmarks page)
+   - Props: danceClass: BookmarkedClass, isSelectionMode, isSelected
+   - Layout:
+     * Header: Studio badge, Remove button (or selection checkbox)
+     * Title: Class name
+     * Details: Instructor (User icon), Date (Calendar icon), Time/Duration (Clock icon)
+     * Footer: Price
+   - Flutter: Card with Column layout
+
+9. CalendarEventCard (in user-calendar page)
+   - Props: event: DanceClass
+   - Layout:
+     * Left accent bar (primary color)
+     * Studio badge (gray)
+     * Class title
+     * Instructor (User icon)
+     * Time range (Clock icon)
+     * Price
+     * Remove button (Trash2 icon, red)
+   - Flutter: IntrinsicHeight Row with Container accent bar
+
+D. CALENDAR COMPONENTS
+----------------------
+
+10. Calendar08
+    - Purpose: Month picker calendar (react-day-picker wrapper)
+    - Props: selected, onSelect, disabled, defaultMonth, className
+    - Features: Day selection, disabled date ranges
+    - Flutter: TableCalendar or flutter_calendar_carousel
+
+11. Calendar31Mobile
+    - Purpose: Full mobile calendar view with day detail
+    - Props: selectedDate, onDateSelect, events, onRemoveEvent, formatTime, getEndTime, onTodayClick
+    - Contains: Month grid, selected day event list, empty day state
+    - Flutter: Custom widget with TableCalendar + ListView
+
+12. DateCarousel (embedded in MobileLayout)
+    - Purpose: Horizontal week date picker with swipe
+    - Features: 
+      * 3-page virtual scroll (prev/current/next week)
+      * Touch swipe navigation
+      * Today highlight, selected date fill
+      * Weekday labels
+    - Flutter: PageView with 3 pages or horizontal ListView
+
+E. FILTER COMPONENTS
+--------------------
+
+13. StudioTabBar (embedded in MobileLayout)
+    - Studios: MDC, TMILLY, ML, PLAYGROUND, 88 (EIGHTYEIGHT), THE SIX
+    - Props: openStudioId, setOpenStudioId
+    - Styling: Pill buttons, active state with bg-primary/10
+    - Flutter: Row of ChoiceChip or custom toggle buttons
+
+14. MobileTimeSelector
+    - Props:
+      * onTimeChange: (range: { start: string, end: string }) => void
+      * value: { start: string, end: string }
+    - Purpose: Time range picker for filtering classes
+    - Flutter: Custom time picker or CupertinoTimerPicker
+
+15. TimeRangeSelector (desktop)
+    - Similar to MobileTimeSelector for desktop layout
+    - Flutter: N/A for mobile
+
+F. AUTH FORM COMPONENTS
+-----------------------
+
+16. LoginForm
+    - Fields: Email, Password
+    - Actions: Login button, Forgot password link, Sign up link
+    - States: Loading, Error
+    - Flutter: Form with TextFormField widgets
+
+17. SignUpForm
+    - Fields: Full Name, Email, Phone (optional), Password, Repeat Password
+    - Actions: Sign up button, Login link
+    - Validation: Password match, phone validation
+    - Flutter: Form with validators
+
+18. ForgotPasswordForm
+    - Fields: Email
+    - States: Form view, Success view
+    - Actions: Send reset email, Home/Login buttons
+    - Flutter: Stateful widget with state toggle
+
+19. UpdatePasswordForm
+    - Fields: New password
+    - Actions: Save new password button
+    - Flutter: Simple Form
+
+G. UI PRIMITIVES
+----------------
+
+20. Button
+    - Variants: default, destructive, outline, secondary, ghost, link
+    - Sizes: default, sm, md, lg, icon, mobileIcon
+    - Flutter: ElevatedButton, OutlinedButton, TextButton, IconButton
+
+21. Card
+    - Components: CardHeader, CardTitle, CardDescription, CardContent, CardFooter
+    - Styling: Rounded-xl (12px), border, shadow-sm
+    - Flutter: Card widget with custom decoration
+
+22. Input / TextField
+    - Standard text input with label support
+    - Flutter: TextFormField with InputDecoration
+
+23. Badge
+    - Variants: default, secondary, destructive, outline
+    - Flutter: Chip or Container with BoxDecoration
+
+24. Sheet / BottomSheet
+    - Sides: top, bottom, left, right
+    - Used for mobile overlays/drawers
+    - Flutter: showModalBottomSheet or DraggableScrollableSheet
+
+25. Dialog
+    - Modal dialogs for confirmations and detail views
+    - Flutter: showDialog with AlertDialog or custom
+
+26. Select / Dropdown
+    - Dropdown select component
+    - Flutter: DropdownButton or DropdownButtonFormField
+
+27. Progress / LinearProgressIndicator
+    - Linear progress bar
+    - Flutter: LinearProgressIndicator
+
+28. ScrollArea
+    - Custom scrollable container
+    - Flutter: SingleChildScrollView or CustomScrollView
+
+29. Separator / Divider
+    - Horizontal divider line
+    - Flutter: Divider widget
+
+30. Checkbox
+    - Used in selection mode for bulk actions
+    - Flutter: Checkbox widget
+
+H. FEEDBACK COMPONENTS
+----------------------
+
+31. Toast / Snackbar
+    - Types: success, error, info
+    - Auto-dismiss
+    - Flutter: ScaffoldMessenger.showSnackBar
+
+32. Spinner / CircularProgressIndicator
+    - Loading indicator
+    - Flutter: CircularProgressIndicator
+
+================================================================================
+STEP 5: DESIGN SYSTEM EXTRACTION
+================================================================================
+
+A. COLOR TOKENS (HSL → Flutter Color)
+--------------------------------------
+
+Light Mode:
+background:           Color(0xFFFFFFFF)  // Pure white
+foreground:           Color(0xFF0A0A0A)  // Near black
+card:                 Color(0xFFFFFFFF)  // White
+cardForeground:       Color(0xFF0A0A0A)  // Near black
+primary:              Color(0xFF171717)  // Very dark gray (almost black)
+primaryForeground:    Color(0xFFFAFAFA)  // Off-white
+secondary:            Color(0xFFF5F5F5)  // Very light gray
+secondaryForeground:  Color(0xFF171717)  // Near black
+muted:                Color(0xFFF5F5F5)  // Very light gray
+mutedForeground:      Color(0xFF737373)  // Medium gray
+accent:               Color(0xFFF5F5F5)  // Very light gray
+accentForeground:     Color(0xFF171717)  // Near black
+destructive:          Color(0xFFEF4444)  // Red
+destructiveForeground:Color(0xFFFAFAFA)  // Off-white
+border:               Color(0xFFE5E5E5)  // Light gray
+input:                Color(0xFFE5E5E5)  // Light gray
+ring:                 Color(0xFF0A0A0A)  // Near black (focus ring)
+
+Dark Mode:
+background:           Color(0xFF0A0A0A)  // Near black
+foreground:           Color(0xFFFAFAFA)  // Off-white
+card:                 Color(0xFF0A0A0A)  // Near black
+cardForeground:       Color(0xFFFAFAFA)  // Off-white
+primary:              Color(0xFFFAFAFA)  // Off-white
+primaryForeground:    Color(0xFF171717)  // Near black
+secondary:            Color(0xFF262626)  // Dark gray
+secondaryForeground:  Color(0xFFFAFAFA)  // Off-white
+muted:                Color(0xFF262626)  // Dark gray
+mutedForeground:      Color(0xFFA3A3A3)  // Medium gray
+destructive:          Color(0xFF7F1D1D)  // Dark red
+border:               Color(0xFF262626)  // Dark gray
+input:                Color(0xFF262626)  // Dark gray
+
+Semantic Colors:
+success:              Color(0xFF16A34A)  // green-600
+rose:                 Color(0xFFE11D48)  // rose-600 (save/heart)
+green:                Color(0xFF16A34A)  // green-600 (calendar add)
+
+B. TYPOGRAPHY
+-------------
+
+Base Font Size: 15.0
+
+Flutter TextStyle Mapping:
+* xs:    TextStyle(fontSize: 12)
+* sm:    TextStyle(fontSize: 14)
+* base:  TextStyle(fontSize: 15)
+* lg:    TextStyle(fontSize: 18)
+* xl:    TextStyle(fontSize: 20)
+* 2xl:   TextStyle(fontSize: 24)
+* 3xl:   TextStyle(fontSize: 30)
+
+Font Weights:
+* normal:   FontWeight.w400
+* medium:   FontWeight.w500
+* semibold: FontWeight.w600
+* bold:     FontWeight.w700
+
+C. SPACING
+----------
+
+Flutter EdgeInsets Mapping:
+* p-2:  EdgeInsets.all(8)
+* p-4:  EdgeInsets.all(16)
+* p-6:  EdgeInsets.all(24)
+* py-3: EdgeInsets.symmetric(vertical: 12)
+* px-4: EdgeInsets.symmetric(horizontal: 16)
+* gap-2: SizedBox(height/width: 8)
+* gap-4: SizedBox(height/width: 16)
+* mb-2: SizedBox(height: 8)
+* mb-4: SizedBox(height: 16)
+* mt-1: SizedBox(height: 4)
+
+Container widths (max constraints):
+* max-w-sm:  BoxConstraints(maxWidth: 384)
+* max-w-md:  BoxConstraints(maxWidth: 448)
+* max-w-2xl: BoxConstraints(maxWidth: 672)
+* max-w-6xl: BoxConstraints(maxWidth: 1152)
+* max-w-7xl: BoxConstraints(maxWidth: 1280)
+
+D. BORDER RADIUS
+----------------
+
+Flutter BorderRadius Mapping:
+* rounded-sm:   BorderRadius.circular(4)
+* rounded-md:   BorderRadius.circular(6)
+* rounded-lg:   BorderRadius.circular(8)
+* rounded-xl:   BorderRadius.circular(12)
+* rounded-3xl:  BorderRadius.circular(24)
+* rounded-full: BorderRadius.circular(999) // or ShapeBorder.circle
+
+E. SHADOWS
+----------
+
+Flutter BoxShadow Mapping:
+* shadow-sm: BoxShadow(
+    color: Colors.black.withOpacity(0.05),
+    blurRadius: 2,
+    offset: Offset(0, 1),
+  )
+* shadow-xl: BoxShadow(
+    color: Colors.black.withOpacity(0.1),
+    blurRadius: 25,
+    offset: Offset(0, 10),
+  )
+
+F. BUTTON STYLES (Flutter)
+--------------------------
+
+Primary Button:
+```dart
+ElevatedButton.styleFrom(
+  backgroundColor: Color(0xFF171717),
+  foregroundColor: Color(0xFFFAFAFA),
+  minimumSize: Size.fromHeight(36),
+  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+)
+```
+
+Outline Button:
+```dart
+OutlinedButton.styleFrom(
+  foregroundColor: Color(0xFF171717),
+  side: BorderSide(color: Color(0xFFE5E5E5)),
+  minimumSize: Size.fromHeight(36),
+  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+)
+```
+
+Destructive Button:
+```dart
+ElevatedButton.styleFrom(
+  backgroundColor: Color(0xFFEF4444),
+  foregroundColor: Colors.white,
+  minimumSize: Size.fromHeight(36),
+  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+)
+```
+
+Ghost Button:
+```dart
+TextButton.styleFrom(
+  foregroundColor: Color(0xFF171717),
+  minimumSize: Size.fromHeight(36),
+)
+```
+
+G. ICON SIZING
+--------------
+
+Flutter Icon Size Mapping:
+* h-3 w-3:  12.0
+* h-4 w-4:  16.0
+* h-5 w-5:  20.0
+* h-6 w-6:  24.0
+* h-12 w-12: 48.0
+* h-16 w-16: 64.0
+
+H. ANIMATIONS / TRANSITIONS
+---------------------------
+
+Flutter Duration Mapping:
+* duration-200: Duration(milliseconds: 200)
+* duration-300: Duration(milliseconds: 300)
+* duration-700: Duration(milliseconds: 700)
+
+Flutter Curves:
+* ease-out: Curves.easeOut
+
+I. FLUTTER THEME DATA
+---------------------
+
+```dart
+ThemeData lightTheme = ThemeData(
+  brightness: Brightness.light,
+  scaffoldBackgroundColor: Color(0xFFFFFFFF),
+  primaryColor: Color(0xFF171717),
+  
+  colorScheme: ColorScheme.light(
+    primary: Color(0xFF171717),
+    onPrimary: Color(0xFFFAFAFA),
+    secondary: Color(0xFFF5F5F5),
+    onSecondary: Color(0xFF171717),
+    surface: Color(0xFFFFFFFF),
+    onSurface: Color(0xFF0A0A0A),
+    error: Color(0xFFEF4444),
+    onError: Colors.white,
+  ),
+  
+  cardTheme: CardTheme(
+    elevation: 1,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(12),
+      side: BorderSide(color: Color(0xFFE5E5E5)),
+    ),
+  ),
+  
+  appBarTheme: AppBarTheme(
+    backgroundColor: Color(0xFFE5E5E5),
+    foregroundColor: Color(0xFF0A0A0A),
+    elevation: 0,
+  ),
+  
+  bottomNavigationBarTheme: BottomNavigationBarThemeData(
+    backgroundColor: Colors.white,
+    selectedItemColor: Color(0xFF171717),
+    unselectedItemColor: Color(0xFF737373),
+  ),
+  
+  inputDecorationTheme: InputDecorationTheme(
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(6),
+      borderSide: BorderSide(color: Color(0xFFE5E5E5)),
+    ),
+    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+  ),
+  
+  textTheme: TextTheme(
+    bodyMedium: TextStyle(fontSize: 15),
+    bodySmall: TextStyle(fontSize: 14),
+    labelSmall: TextStyle(fontSize: 12),
+    titleLarge: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+    headlineMedium: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+  ),
+);
+```
+
+================================================================================
+STEP 6: BACKEND CONTRACT (API SPECIFICATION)
+================================================================================
+
+A. SUPABASE TABLES
+------------------
+
+1. danceClassStorage
+   - Primary table for all dance classes
+   - Fields:
+     * class_id: string (primary key)
+     * classname: string
+     * instructor: string
+     * price: number (double)
+     * time: string (format: "HH:MM:SS")
+     * length: string (e.g., "60 min", "90 min")
+     * studio_name: string (MDC | TMILLY | ML | PLAYGROUND | EIGHTYEIGHT | THESIX)
+     * date: string (format: "YYYY-MM-DD")
+
+2. bookmarks
+   - User's saved/bookmarked classes
+   - Fields:
+     * id: int (auto-generated)
+     * user_id: string (UUID, foreign key to auth.users)
+     * class_id: string (foreign key to danceClassStorage)
+     * created_at: timestamp
+
+3. user_schedule
+   - User's calendar/scheduled classes
+   - Fields:
+     * id: int (auto-generated)
+     * user_id: string (UUID, foreign key to auth.users)
+     * class_id: string (foreign key to danceClassStorage)
+     * created_at: timestamp
+
+B. FLUTTER DATA MODELS
+----------------------
+
+```dart
+class DanceClass {
+  final String classId;
+  final String classname;
+  final String instructor;
+  final double price;
+  final String time;      // "HH:MM:SS"
+  final String length;    // "60 min", "90 min", etc.
+  final String studioName;
+  final String date;      // "YYYY-MM-DD"
+
+  DanceClass({
+    required this.classId,
+    required this.classname,
+    required this.instructor,
+    required this.price,
+    required this.time,
+    required this.length,
+    required this.studioName,
+    required this.date,
+  });
+
+  factory DanceClass.fromJson(Map<String, dynamic> json) => DanceClass(
+    classId: json['class_id'] as String,
+    classname: json['classname'] as String,
+    instructor: json['instructor'] as String,
+    price: (json['price'] as num).toDouble(),
+    time: json['time'] as String,
+    length: json['length'] as String,
+    studioName: json['studio_name'] as String,
+    date: json['date'] as String,
+  );
+}
+
+class BookmarkedClass extends DanceClass {
+  final DateTime? bookmarkedAt;
+
+  BookmarkedClass({
+    required super.classId,
+    required super.classname,
+    required super.instructor,
+    required super.price,
+    required super.time,
+    required super.length,
+    required super.studioName,
+    required super.date,
+    this.bookmarkedAt,
+  });
+}
+
+class CalendarEvent extends DanceClass {
+  final DateTime? scheduledAt;
+
+  CalendarEvent({
+    required super.classId,
+    required super.classname,
+    required super.instructor,
+    required super.price,
+    required super.time,
+    required super.length,
+    required super.studioName,
+    required super.date,
+    this.scheduledAt,
+  });
+}
+
+class TimeRange {
+  final String start; // "HH:MM"
+  final String end;   // "HH:MM"
+
+  TimeRange({required this.start, required this.end});
+}
+```
+
+C. REPOSITORY INTERFACE
+-----------------------
+
+```dart
+abstract class ClassRepository {
+  // Fetch classes for studio/date
+  Future<List<DanceClass>> fetchClassesByDate({
+    required String studioName,
+    required String date,
+    TimeRange? timeRange,
+  });
+
+  // Search classes
+  Future<List<DanceClass>> searchClasses({
+    required String studioName,
+    required String searchTerm,
+    TimeRange? timeRange,
+  });
+
+  // Bookmarks
+  Future<void> saveToBookmarks(String userId, String classId);
+  Future<void> removeFromBookmarks(String userId, String classId);
+  Future<List<String>> getBookmarkedClassIds(String userId);
+  Future<List<BookmarkedClass>> getBookmarkedClasses(String userId);
+
+  // Schedule
+  Future<void> addToSchedule(String userId, String classId);
+  Future<void> removeFromSchedule(String userId, String classId);
+  Future<List<String>> getScheduledClassIds(String userId);
+  Future<List<CalendarEvent>> getMonthEvents(String userId, DateTime month);
+}
+
+abstract class AuthRepository {
+  Future<void> signIn(String email, String password);
+  Future<void> signUp(String email, String password, String displayName, String? phone);
+  Future<void> signOut();
+  Future<void> resetPassword(String email);
+  Future<void> updatePassword(String newPassword);
+  Future<void> updateProfile({String? displayName, String? email, String? phone});
+  Future<void> deleteAccount();
+  Stream<User?> get authStateChanges;
+  User? get currentUser;
+}
+```
+
+D. SUPABASE QUERIES (Dart)
+--------------------------
+
+```dart
+// Fetch classes by date
+final response = await supabase
+    .from('danceClassStorage')
+    .select()
+    .eq('studio_name', studioName)
+    .eq('date', date)
+    .gte('time', '${timeRange.start}:00')
+    .lte('time', '${timeRange.end}:00')
+    .order('time', ascending: true);
+
+// Search classes
+final response = await supabase
+    .from('danceClassStorage')
+    .select()
+    .eq('studio_name', studioName)
+    .or('classname.ilike.%$searchTerm%,instructor.ilike.%$searchTerm%')
+    .order('date', ascending: true)
+    .order('time', ascending: true);
+
+// Save bookmark
+await supabase.from('bookmarks').insert({
+  'user_id': userId,
+  'class_id': classId,
+});
+
+// Remove bookmark
+await supabase
+    .from('bookmarks')
+    .delete()
+    .eq('user_id', userId)
+    .eq('class_id', classId);
+
+// Get bookmarked class IDs
+final response = await supabase
+    .from('bookmarks')
+    .select('class_id')
+    .eq('user_id', userId);
+
+// Add to schedule
+await supabase.from('user_schedule').insert({
+  'user_id': userId,
+  'class_id': classId,
+});
+
+// Get month events
+final scheduleResponse = await supabase
+    .from('user_schedule')
+    .select('class_id, created_at')
+    .eq('user_id', userId);
+
+final classIds = scheduleResponse.map((e) => e['class_id']).toList();
+
+final classResponse = await supabase
+    .from('danceClassStorage')
+    .select()
+    .in_('class_id', classIds)
+    .gte('date', monthStart)
+    .lt('date', monthEnd);
+```
+
+E. AUTH METHODS (Dart)
+----------------------
+
+```dart
+// Sign in
+await supabase.auth.signInWithPassword(
+  email: email,
+  password: password,
+);
+
+// Sign up
+await supabase.auth.signUp(
+  email: email,
+  password: password,
+  data: {'display_name': displayName},
+);
+if (phone != null) {
+  await supabase.auth.updateUser(UserAttributes(phone: phone));
+}
+
+// Sign out
+await supabase.auth.signOut();
+
+// Reset password
+await supabase.auth.resetPasswordForEmail(
+  email,
+  redirectTo: 'YOUR_DEEP_LINK/update-password',
+);
+
+// Update password
+await supabase.auth.updateUser(UserAttributes(password: newPassword));
+
+// Update profile
+await supabase.auth.updateUser(UserAttributes(
+  email: email,
+  data: {'display_name': displayName, 'phone_number': phone},
+));
+
+// Delete account (via Edge Function or custom endpoint)
+await supabase.functions.invoke('delete-account', body: {'userId': userId});
+```
+
+F. ERROR HANDLING
+-----------------
+
+```dart
+class AppException implements Exception {
+  final String message;
+  final String? code;
+
+  AppException(this.message, [this.code]);
+}
+
+class AlreadyBookmarkedException extends AppException {
+  AlreadyBookmarkedException() : super('Class is already bookmarked');
+}
+
+class AlreadyScheduledException extends AppException {
+  AlreadyScheduledException() : super('Class is already scheduled');
+}
+
+// Usage
+try {
+  await repository.saveToBookmarks(userId, classId);
+  showSnackBar('Saved to bookmarks', type: SnackBarType.success);
+} on AlreadyBookmarkedException {
+  showSnackBar('This class is already saved', type: SnackBarType.error);
+} catch (e) {
+  showSnackBar('Failed to save class', type: SnackBarType.error);
+}
+```
+
+G. STATE MANAGEMENT PATTERN
+---------------------------
+
+Recommended: Riverpod or flutter_bloc
+
+Provider Pattern Example (Riverpod):
+```dart
+final classRepositoryProvider = Provider<ClassRepository>((ref) {
+  return SupabaseClassRepository(supabase);
+});
+
+final scheduleClassesProvider = FutureProvider.family<List<DanceClass>, ScheduleParams>((ref, params) async {
+  final repo = ref.watch(classRepositoryProvider);
+  return repo.fetchClassesByDate(
+    studioName: params.studioName,
+    date: params.date,
+    timeRange: params.timeRange,
+  );
+});
+
+final bookmarkedIdsProvider = FutureProvider<Set<String>>((ref) async {
+  final userId = ref.watch(authStateProvider).value?.id;
+  if (userId == null) return {};
+  final repo = ref.watch(classRepositoryProvider);
+  final ids = await repo.getBookmarkedClassIds(userId);
+  return ids.toSet();
+});
+```
+
+================================================================================
+STUDIOS REFERENCE
+================================================================================
+
+Static list of studios:
+1. MDC        - id: "MDC",        display: "MDC"
+2. TMILLY     - id: "TMILLY",     display: "TMILLY"
+3. ML         - id: "ML",         display: "ML"
+4. PLAYGROUND - id: "PLAYGROUND", display: "PLAYGROUND"
+5. EIGHTYEIGHT - id: "EIGHTYEIGHT", display: "88"
+6. THESIX     - id: "THESIX",     display: "THE SIX"
+
+================================================================================
+BUILD ORDER (for Flutter implementation)
+================================================================================
+
+Phase 1: Foundation
+1. Project setup (Flutter, Supabase SDK, dependencies)
+2. Theme/Design system implementation
+3. Data models
+
+Phase 2: Auth
+4. Auth repository & state
+5. Login screen
+6. Sign up screen
+7. Forgot password screen
+8. Update password screen
+9. Sign up success screen
+
+Phase 3: App Shell
+10. Bottom navigation bar
+11. App shell scaffold
+12. Route configuration
+
+Phase 4: Schedule
+13. Mobile header
+14. Studio tab bar
+15. Date carousel
+16. Class card widget
+17. Class list (with swipe actions)
+18. Schedule page integration
+
+Phase 5: Bookmarks
+19. Saved class card
+20. Empty state
+21. Bookmarks page
+
+Phase 6: Calendar
+22. Month calendar widget
+23. Day event list
+24. Calendar event card
+25. Calendar page
+
+Phase 7: Profile
+26. Profile form
+27. Delete account flow
+28. Profile page
+
+Phase 8: Polish
+29. Loading states
+30. Error handling
+31. Toast/snackbar feedback
+32. Animations
+
+================================================================================
+END OF EXTRACTION DOCUMENT
+================================================================================
